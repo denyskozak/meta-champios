@@ -2,6 +2,7 @@ module champion_ships::champion_ships {
     use std::string::String;
     use sui::balance;
     use sui::coin;
+    use std::vector;
     use sui::sui::SUI;
 
     /// Error codes
@@ -10,6 +11,7 @@ module champion_ships::champion_ships {
     const ChampionshipNotOngoingError: u64 = 0x3;
     const NoWinnersError: u64 = 0x4;
     const EmptyRewardPoolError: u64 = 0x5;
+    const ChampionshipCapFullError: u64 = 0x6;
 
     /// The main Championship object
     public struct Championship has key {
@@ -22,6 +24,7 @@ module champion_ships::champion_ships {
         reward_pool: balance::Balance<SUI>,
         admin: address,
         participants: vector<address>,
+        cap: u64, // max amout of participants
         /// 0 = Open, 1 = Ongoing, 2 = Closed
         status: u8,
     }
@@ -33,6 +36,7 @@ module champion_ships::champion_ships {
         game: String,
         team_size: u64, // 1x1, 3x3, 5x5
         entry_fee: u64,
+        cap: u64,
         ctx: &mut TxContext,
     ) {
         let championship = Championship {
@@ -42,6 +46,7 @@ module champion_ships::champion_ships {
             game,
             team_size, // 1x1, 3x3, 5x5
             entry_fee,
+            cap,
             reward_pool: balance::zero<SUI>(),
             admin: tx_context::sender(ctx),
             participants: vector::empty<address>(),
@@ -52,7 +57,7 @@ module champion_ships::champion_ships {
     }
 
     /// Join a championship by paying the required entry fee
-    public fun join_championship(
+    public fun join(
         championship: &mut Championship,
         payment: &mut coin::Coin<SUI>, // `mut` so we can call `split`
         ctx: &mut TxContext
@@ -60,19 +65,31 @@ module champion_ships::champion_ships {
         // Ensure the championship is open (status = 0)
         assert!(championship.status == 0, ChampionshipClosedError);
 
-        // Collect entry fee from payment coin
-        let entry_fee = championship.entry_fee;
-        let fee_coin = payment.split(entry_fee, ctx);
+        // Ensure the championship has capabity
+        assert!(vector::length(&championship.participants) <= championship.cap, ChampionshipCapFullError);
 
-        // Put the fee coin into the championship reward pool
-        coin::put(&mut championship.reward_pool, fee_coin);
+        if (championship.entry_fee != 0) {
+            // Collect entry fee from payment coin
+            let entry_fee = championship.entry_fee;
+            let fee_coin = payment.split(entry_fee, ctx);
+
+            // Put the fee coin into the championship reward pool
+            coin::put(&mut championship.reward_pool, fee_coin);
+        };
 
         // Add the participant to the championship
         vector::push_back(&mut championship.participants, tx_context::sender(ctx));
     }
 
+    public fun top_up(
+        championship: &mut Championship,
+        payment: coin::Coin<SUI>,
+    ) {
+        coin::put(&mut championship.reward_pool, payment);
+    }
+
     /// Finish the championship, pay winners, and close it (status = 2)
-    public fun finish_championship(
+    public fun finish(
         championship: &mut Championship,
         winner_addresses: vector<address>,
         ctx: &mut TxContext
@@ -88,14 +105,14 @@ module champion_ships::champion_ships {
         assert!(winner_count > 0, NoWinnersError);
 
         // Reward pool must be non-empty
-        let total_rewards = balance::value(&championship.reward_pool);
+        let total_rewards = championship.reward_pool.value();
         assert!(total_rewards > 0, EmptyRewardPoolError);
 
         // Distribute rewards equally
         let reward_per_winner = total_rewards / winner_count;
         let mut i = 0;
         while (i < winner_count) {
-            let winner_addr = *vector::borrow(&winner_addresses, i);
+            let winner_addr = winner_addresses[i];
             // Turn part of the Balance<SUI> into a coin
             let reward = championship.reward_pool.split(reward_per_winner);
 
