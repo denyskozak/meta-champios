@@ -7,11 +7,11 @@ import {HeroUIProvider} from "@heroui/system";
 import {useRouter} from "next/navigation";
 import {ThemeProvider as NextThemesProvider} from "next-themes";
 import {SuiClient} from '@mysten/sui/client';
-import {ZKLoginProvider} from 'react-sui-zk-login-kit';
 
 import {createNetworkConfig, SuiClientProvider, useSuiClient, WalletProvider} from '@mysten/dapp-kit';
 import {getFullnodeUrl} from '@mysten/sui/client';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
+import {ZKLoginProvider} from "react-sui-zk-login-kit";
 // Config options for the networks you want to connect to
 
 const {networkConfig} = createNetworkConfig({

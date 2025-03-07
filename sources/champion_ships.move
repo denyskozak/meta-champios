@@ -2,7 +2,6 @@ module champion_ships::champion_ships {
     use std::string::String;
     use sui::balance;
     use sui::coin;
-    use std::vector;
     use sui::sui::SUI;
 
     /// Error codes
@@ -12,6 +11,7 @@ module champion_ships::champion_ships {
     const NoWinnersError: u64 = 0x4;
     const EmptyRewardPoolError: u64 = 0x5;
     const ChampionshipCapFullError: u64 = 0x6;
+    const ChampionshipLimitAmmountdError: u64 = 0x7;
 
     /// The main Championship object
     public struct Championship has key {
@@ -19,6 +19,7 @@ module champion_ships::champion_ships {
         title: String,
         description: String,
         game: String,
+        limit_amount: u64,
         team_size: u64, // 1x1, 3x3, 5x5
         entry_fee: u64,
         reward_pool: balance::Balance<SUI>,
@@ -36,6 +37,7 @@ module champion_ships::champion_ships {
         game: String,
         team_size: u64, // 1x1, 3x3, 5x5
         entry_fee: u64,
+        limit_amount: u64,
         cap: u64,
         ctx: &mut TxContext,
     ) {
@@ -46,6 +48,7 @@ module champion_ships::champion_ships {
             game,
             team_size, // 1x1, 3x3, 5x5
             entry_fee,
+            limit_amount,
             cap,
             reward_pool: balance::zero<SUI>(),
             admin: tx_context::sender(ctx),
@@ -64,6 +67,9 @@ module champion_ships::champion_ships {
     ) {
         // Ensure the championship is open (status = 0)
         assert!(championship.status == 0, ChampionshipClosedError);
+
+        // Ensure we have slot for new joiner
+        assert!(vector::length(&championship.participants) + 1 >= championship.limit_amount, ChampionshipLimitAmmountdError);
 
         // Ensure the championship has capabity
         assert!(vector::length(&championship.participants) <= championship.cap, ChampionshipCapFullError);
@@ -111,6 +117,7 @@ module champion_ships::champion_ships {
         // Distribute rewards equally
         let reward_per_winner = total_rewards / winner_count;
         let mut i = 0;
+
         while (i < winner_count) {
             let winner_addr = winner_addresses[i];
             // Turn part of the Balance<SUI> into a coin

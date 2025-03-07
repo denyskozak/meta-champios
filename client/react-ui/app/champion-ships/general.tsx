@@ -1,16 +1,17 @@
 "use client";
-import { title } from "@/components/primitives";
-import { Transaction } from "@mysten/sui/transactions";
-import React, { useState } from "react";
+import {title} from "@/components/primitives";
+import {Transaction} from "@mysten/sui/transactions";
+import React, {useLayoutEffect, useState} from "react";
 import {useZKLogin} from "react-sui-zk-login-kit";
-import {useSuiClientQuery} from "@mysten/dapp-kit";
+import Championships from "@/app/champion-ships/championships";
+
+
 // Sui JS SDK
 
 // EXAMPLE: Connect to Sui testnet
 
 // Replace with your actual deployed addresses!
 const PACKAGE_ID = process.env.NEXT_PUBLIC_CHAMPIONSHIPS_PACKAGE_ID;
-const MODULE_NAME = "champion_ships::champion_ships";
 
 export default function General() {
     // ---- State for forms ----
@@ -20,7 +21,9 @@ export default function General() {
     const [game, setGame] = useState("");
     const [teamSize, setTeamSize] = useState(1);
     const [entryFee, setEntryFee] = useState(0);
-    const { executeTransaction, address } = useZKLogin();
+    const {executeTransaction, address: zkAddress} = useZKLogin();
+    const address = zkAddress || '';
+
     // Join Championship
     const [championshipObjId, setChampionshipObjId] = useState("");
     const [coinObjId, setCoinObjId] = useState("");
@@ -29,9 +32,6 @@ export default function General() {
     const [finishObjId, setFinishObjId] = useState("");
     const [winners, setWinners] = useState("");
 
-    const { data, isPending, error, refetch } = useSuiClientQuery('getOwnedObjects', {
-        owner: address ? address : "",
-    });
 
     // A placeholder for whatever wallet or signer you plan to use
     // In an actual app, you'd integrate with a wallet extension or your own private keys.
@@ -47,9 +47,10 @@ export default function General() {
         } catch (error) {
             console.log('error ', error)
         }
-      
+
     };
 
+    console.log('address ', address)
     // ---- CREATE CHAMPIONSHIP ----
     const createChampionship = async () => {
 
@@ -127,14 +128,17 @@ export default function General() {
     };
 
     return (
-        <div style={{ padding: "1rem", fontFamily: "sans-serif", backgroundColor: "black" }}>
+        <div className="w-screen" style={{ overflow: 'scroll', padding: "1rem", fontFamily: "sans-serif", backdropFilter: "blur(10px)"}}>
             {/* HeroUI-like header */}
-            <header style={{ textAlign: "center", marginBottom: "2rem" }}>
-                <h1 style={{ fontSize: "2rem" }}>SUI Championship System</h1>
+            <header style={{textAlign: "center", marginBottom: "2rem"}}>
+                <h1 style={{fontSize: "2rem"}}>SUI Championship System</h1>
                 <p>Interact with the Move contract from a simple React UI</p>
             </header>
 
-            <section style={{ maxWidth: "600px", margin: "0 auto", marginBottom: "2rem" }}>
+            <section style={{maxWidth: "800px", margin: "0 auto", marginBottom: "2rem"}}>
+                <Championships />
+            </section>
+            <section style={{maxWidth: "600px", margin: "0 auto", marginBottom: "2rem"}}>
                 <div
                     style={{
                         // backgroundColor: "#F3F4F6",
@@ -187,7 +191,7 @@ export default function General() {
                             onChange={(e) => setEntryFee(parseInt(e.target.value))}
                         />
                     </div>
-                    <button onClick={createChampionship} style={{ marginTop: "0.5rem" }}>
+                    <button onClick={createChampionship} style={{marginTop: "0.5rem"}}>
                         Create
                     </button>
                 </div>
@@ -220,7 +224,7 @@ export default function General() {
                             placeholder="0x..."
                         />
                     </div>
-                    <button onClick={joinChampionship} style={{ marginTop: "0.5rem" }}>
+                    <button onClick={joinChampionship} style={{marginTop: "0.5rem"}}>
                         Join
                     </button>
                 </div>
@@ -250,10 +254,10 @@ export default function General() {
                             value={winners}
                             onChange={(e) => setWinners(e.target.value)}
                             placeholder="0x123..., 0xabc..., 0xdef..."
-                            style={{ width: "100%" }}
+                            style={{width: "100%"}}
                         />
                     </div>
-                    <button onClick={finishChampionship} style={{ marginTop: "0.5rem" }}>
+                    <button onClick={finishChampionship} style={{marginTop: "0.5rem"}}>
                         Finish
                     </button>
                 </div>

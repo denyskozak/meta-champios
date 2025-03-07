@@ -1,16 +1,9 @@
 "use client";
-
-import {Link} from "@heroui/link";
-import {Snippet} from "@heroui/snippet";
-import {Code} from "@heroui/code";
-import {button as buttonStyles} from "@heroui/theme";
 import {generateRandomness} from "@mysten/sui/zklogin";
-import {ZKLogin, useZKLogin} from "react-sui-zk-login-kit";
+import {useZKLogin, ZKLogin} from "react-sui-zk-login-kit";
 
-import {siteConfig} from "@/config/site";
-import {title, subtitle} from "@/components/primitives";
-import {GithubIcon} from "@/components/icons";
 import {useEffect} from "react";
+
 import General from "@/app/champion-ships/general";
 
 const SUI_PROVER_ENDPOINT = 'https://prover-dev.mystenlabs.com/v1';
@@ -45,29 +38,31 @@ export default function Home() {
     }, [encodedJwt]);
 
     return (
-        <section className="flex flex-col items-center justify-center  pt-8">
-        {/*    <div className="inline-block max-w-xl text-center justify-center ">*/}
-        {/*        <span className={title()}>Join&nbsp;</span>*/}
-        {/*        <span className={title({color: "violet"})}>Competitive&nbsp;</span>*/}
-        {/*        <span className={title()}>Path&nbsp;</span>*/}
-        {/*        <br/>*/}
-        {/*        <span className={title()}>*/}
-        {/*  with multi-game Championships&nbsp;*/}
-        {/*</span>*/}
-        {/*        /!*<div className={subtitle({class: "mt-4"})}>*!/*/}
-        {/*        /!*    Hard, Blood, Money.*!/*/}
-        {/*        /!*</div>*!/*/}
-        {/*    </div>*/}
+        <section className="flex flex-col items-center justify-center">
+            {/*    <div className="inline-block max-w-xl text-center justify-center ">*/}
+            {/*        <span className={title()}>Join&nbsp;</span>*/}
+            {/*        <span className={title({color: "violet"})}>Competitive&nbsp;</span>*/}
+            {/*        <span className={title()}>Path&nbsp;</span>*/}
+            {/*        <br/>*/}
+            {/*        <span className={title()}>*/}
+            {/*  with multi-game Championships&nbsp;*/}
+            {/*</span>*/}
+            {/*        /!*<div className={subtitle({class: "mt-4"})}>*!/*/}
+            {/*        /!*    Hard, Blood, Money.*!/*/}
+            {/*        /!*</div>*!/*/}
+            {/*    </div>*/}
 
             {address
                 ? (
                     <General/>
                 )
                 : (
-                    <ZKLogin
-                        providers={providers}
-                        proverProvider={SUI_PROVER_ENDPOINT}
-                    />
+                    <div style={{ padding: '32px', backdropFilter: 'blur(10px)', borderRadius: '16px' }}>
+                        <ZKLogin
+                            providers={providers}
+                            proverProvider={SUI_PROVER_ENDPOINT}
+                        />
+                    </div>
                 )}
 
             {/*<div className="flex gap-3">*/}
