@@ -75,6 +75,7 @@ export default function Championships() {
           .then(setChampionShips);
     }
 
+    fetchList();
     const intrevalId = setInterval(() => fetchList(), 5000);
     return () => {
       clearInterval(intrevalId);

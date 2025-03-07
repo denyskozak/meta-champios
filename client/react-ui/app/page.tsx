@@ -57,7 +57,7 @@ export default function Home() {
                     <General/>
                 )
                 : (
-                    <div style={{ padding: '32px', backdropFilter: 'blur(10px)', borderRadius: '16px' }}>
+                    <div style={{ padding: '48px', backdropFilter: 'blur(10px)', borderRadius: '16px' }}>
                         <ZKLogin
                             providers={providers}
                             proverProvider={SUI_PROVER_ENDPOINT}
