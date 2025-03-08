@@ -42,12 +42,12 @@ export default function RootLayout({
           "min-h-screen bg-background font-sans antialiased",
           fontSans.variable,
         )}
-        style={{ backgroundImage: `url(${bg.src})`, backgroundSize: "cover", backdropFilter: "blur(10px)" }}
+        style={{ backgroundImage: `url(${bg.src})`, backgroundSize: "cover", }}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
           <div className="relative flex flex-col h-screen">
             <Navbar />
-            <main className="w-screen h-screen flex justify-center" style={{  backdropFilter: "blur(6px)" }}>
+            <main className="w-screen h-screen flex justify-center" style={{  backdropFilter: "blur(8px)" }}>
               {children}
             </main>
             {/*<footer className="w-full flex items-center justify-center py-3">*/}
