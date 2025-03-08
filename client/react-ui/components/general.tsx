@@ -1,9 +1,13 @@
 "use client";
-import {title} from "@/components/primitives";
 import {Transaction} from "@mysten/sui/transactions";
 import React, {useLayoutEffect, useState} from "react";
-import {useZKLogin} from "react-sui-zk-login-kit";
-import Championships from "@/app/champion-ships/championships";
+import {useZKLogin, ZKLogin} from "react-sui-zk-login-kit";
+import Championships from "@/components/championships";
+import {Login} from "@/components/login";
+
+import {siteConfig} from "@/config/site";
+import {title as getTitle, subtitle} from "@/components/primitives";
+import {convertSuiToMist} from "@/utiltiies";
 
 
 // Sui JS SDK
@@ -21,6 +25,7 @@ export default function General() {
     const [game, setGame] = useState("");
     const [teamSize, setTeamSize] = useState(1);
     const [entryFee, setEntryFee] = useState(0);
+    const [joinersLimit, setJoinerLimit] = useState(100);
     const {executeTransaction, address: zkAddress} = useZKLogin();
     const address = zkAddress || '';
 
@@ -58,16 +63,12 @@ export default function General() {
             const tx = new Transaction();
 
             console.log('1 ', [
-                tx.pure.string(title),
-                tx.pure.string(description),
-                tx.pure.string(game),
-                tx.pure.u64(teamSize),
-                tx.pure.u64(entryFee),
+
                 title,
                 description,
                 game,
                 teamSize,
-                entryFee,
+                convertSuiToMist(entryFee),
             ])
             // Move Call
             tx.moveCall({
@@ -77,33 +78,14 @@ export default function General() {
                     tx.pure.string(description),
                     tx.pure.string(game),
                     tx.pure.u64(teamSize),
-                    tx.pure.u64(entryFee),
+                    tx.pure.u64(convertSuiToMist(entryFee)),
+                    tx.pure.u64(joinersLimit),
                 ],
             });
             await handleSignAndExecute(tx);
         } catch (error) {
             console.error(error);
             alert("Error creating championship. See console.");
-        }
-    };
-
-    // ---- JOIN CHAMPIONSHIP ----
-    const joinChampionship = async () => {
-        try {
-            const tx = new Transaction();
-            // We need a mutable reference to the coin and the championship object
-            // So we pass them as objects in the transaction
-            const champ = tx.object(championshipObjId);
-            const coinObj = tx.object(coinObjId);
-
-            tx.moveCall({
-                target: `${PACKAGE_ID}::champion_ships::champion_ships::join_championship`,
-                arguments: [champ, coinObj],
-            });
-            await handleSignAndExecute(tx);
-        } catch (error) {
-            console.error(error);
-            alert("Error joining championship. Check console.");
         }
     };
 
@@ -128,16 +110,28 @@ export default function General() {
     };
 
     return (
-        <div className="w-screen" style={{ overflow: 'scroll', padding: "1rem", fontFamily: "sans-serif", backdropFilter: "blur(10px)"}}>
+        <div className="w-screen"
+             style={{overflow: 'scroll', padding: "1rem", fontFamily: "sans-serif"}}>
             {/* HeroUI-like header */}
             <header style={{textAlign: "center", marginBottom: "2rem"}}>
-                <h1 style={{fontSize: "2rem"}}>SUI Championship System</h1>
-                <p>Interact with the Move contract from a simple React UI</p>
+                <div className="inline-block max-w-xl text-center justify-center ">
+                    <span className={getTitle()}>Join&nbsp;</span>
+                    <span className={getTitle({color: "violet"})}>Competitive&nbsp;</span>
+                    <span className={getTitle()}>Path&nbsp;</span>
+                    <br/>
+                    <span className={getTitle()}>
+                        with multi-game <span className={getTitle({color: "violet"})}>Championships</span>&nbsp;
+            </span>
+                    <div className={subtitle({class: "mt-4"})}>
+                        Hard, Blood, Money.
+                    </div>
+                </div>
             </header>
 
-            <section style={{maxWidth: "800px", margin: "0 auto", marginBottom: "2rem"}}>
-                <Championships />
+            <section className="flex justify-center items-center" style={{paddingLeft: '2 rem', paddingRight: '2 rem', margin: "0 auto", marginBottom: "2rem"}}>
+                <Championships/>
             </section>
+
             <section style={{maxWidth: "600px", margin: "0 auto", marginBottom: "2rem"}}>
                 <div
                     style={{
@@ -188,7 +182,15 @@ export default function General() {
                         <input
                             type="number"
                             value={entryFee}
-                            onChange={(e) => setEntryFee(parseInt(e.target.value))}
+                            onChange={(e) => setEntryFee(parseFloat(e.target.value))}
+                        />
+                    </div>
+                    <div>
+                        <label>Joiners Limit: </label>
+                        <input
+                            type="number"
+                            value={joinersLimit}
+                            onChange={(e) => setJoinerLimit(parseInt(e.target.value))}
                         />
                     </div>
                     <button onClick={createChampionship} style={{marginTop: "0.5rem"}}>
@@ -196,38 +198,6 @@ export default function General() {
                     </button>
                 </div>
 
-                <div
-                    style={{
-                        // backgroundColor: "#E5E7EB",
-                        borderRadius: "8px",
-                        padding: "1rem",
-                        marginBottom: "1rem",
-                    }}
-                >
-                    <h2>Join Championship</h2>
-                    <p>Requires the user to have a coin object with enough SUI balance to pay entry fee</p>
-                    <div>
-                        <label>Championship Object ID: </label>
-                        <input
-                            type="text"
-                            value={championshipObjId}
-                            onChange={(e) => setChampionshipObjId(e.target.value)}
-                            placeholder="0x..."
-                        />
-                    </div>
-                    <div>
-                        <label>Coin Object ID: </label>
-                        <input
-                            type="text"
-                            value={coinObjId}
-                            onChange={(e) => setCoinObjId(e.target.value)}
-                            placeholder="0x..."
-                        />
-                    </div>
-                    <button onClick={joinChampionship} style={{marginTop: "0.5rem"}}>
-                        Join
-                    </button>
-                </div>
 
                 <div
                     style={{

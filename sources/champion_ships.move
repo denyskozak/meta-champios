@@ -12,6 +12,9 @@ module champion_ships::champion_ships {
     const EmptyRewardPoolError: u64 = 0x5;
     const ChampionshipCapFullError: u64 = 0x6;
     const ChampionshipLimitAmmountdError: u64 = 0x7;
+    const UserHasNoEnoughtCoinsToJoin: u64 = 0x8;
+    const ChampionshipNoFreeError: u64 = 0x9;
+    const ChampionshipFreeError: u64 = 0x10;
 
     /// The main Championship object
     public struct Championship has key {
@@ -19,13 +22,12 @@ module champion_ships::champion_ships {
         title: String,
         description: String,
         game: String,
-        limit_amount: u64,
         team_size: u64, // 1x1, 3x3, 5x5
         entry_fee: u64,
         reward_pool: balance::Balance<SUI>,
         admin: address,
         participants: vector<address>,
-        cap: u64, // max amout of participants
+        participants_limit: u64, // max amout of participants
         /// 0 = Open, 1 = Ongoing, 2 = Closed
         status: u8,
     }
@@ -37,8 +39,7 @@ module champion_ships::champion_ships {
         game: String,
         team_size: u64, // 1x1, 3x3, 5x5
         entry_fee: u64,
-        limit_amount: u64,
-        cap: u64,
+        participants_limit: u64,
         ctx: &mut TxContext,
     ) {
         let championship = Championship {
@@ -48,11 +49,10 @@ module champion_ships::champion_ships {
             game,
             team_size, // 1x1, 3x3, 5x5
             entry_fee,
-            limit_amount,
-            cap,
             reward_pool: balance::zero<SUI>(),
-            admin: tx_context::sender(ctx),
+            admin:  ctx.sender(),
             participants: vector::empty<address>(),
+            participants_limit,
             status: 0
         };
         // Share the newly created object so others can mutate it
@@ -60,31 +60,38 @@ module champion_ships::champion_ships {
     }
 
     /// Join a championship by paying the required entry fee
-    public fun join(
+    public fun join_paid(
         championship: &mut Championship,
-        payment: &mut coin::Coin<SUI>, // `mut` so we can call `split`
+        payment: coin::Coin<SUI>,
         ctx: &mut TxContext
     ) {
         // Ensure the championship is open (status = 0)
         assert!(championship.status == 0, ChampionshipClosedError);
 
-        // Ensure we have slot for new joiner
-        assert!(vector::length(&championship.participants) + 1 >= championship.limit_amount, ChampionshipLimitAmmountdError);
+        // Ensure the championship has capabity
+        assert!(vector::length(&championship.participants) != championship.participants_limit, ChampionshipCapFullError);
+        assert!(championship.entry_fee > 0, ChampionshipFreeError);
+
+        // Ensure the championship is open (status = 0)
+        assert!(championship.entry_fee == payment.value(), UserHasNoEnoughtCoinsToJoin);
+
+        coin::put(&mut championship.reward_pool, payment);
+        vector::push_back(&mut championship.participants, ctx.sender());
+    }
+
+    public fun join_free(
+        championship: &mut Championship,
+        ctx: &mut TxContext
+    ) {
+        // Ensure the championship is open (status = 0)
+        assert!(championship.status == 0, ChampionshipClosedError);
 
         // Ensure the championship has capabity
-        assert!(vector::length(&championship.participants) <= championship.cap, ChampionshipCapFullError);
-
-        if (championship.entry_fee != 0) {
-            // Collect entry fee from payment coin
-            let entry_fee = championship.entry_fee;
-            let fee_coin = payment.split(entry_fee, ctx);
-
-            // Put the fee coin into the championship reward pool
-            coin::put(&mut championship.reward_pool, fee_coin);
-        };
+        assert!(vector::length(&championship.participants) != championship.participants_limit, ChampionshipCapFullError);
+        assert!(championship.entry_fee == 0, ChampionshipNoFreeError);
 
         // Add the participant to the championship
-        vector::push_back(&mut championship.participants, tx_context::sender(ctx));
+        vector::push_back(&mut championship.participants, ctx.sender());
     }
 
     public fun top_up(
