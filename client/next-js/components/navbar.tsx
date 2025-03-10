@@ -25,14 +25,35 @@ import {
     DiscordIcon,
     HeartFilledIcon,
     SearchIcon,
-    Logo,
+    Logo, CoinIcon,
 } from "@/components/icons";
 import {useZKLogin} from "react-sui-zk-login-kit";
 import {useRouter} from "next/navigation";
+import {PACKAGE_ID} from "@/consts";
+import {useEffect, useState} from "react";
+import {useTransaction} from "@/app/hooks";
+import {data} from "autoprefixer";
 
 export const Navbar = () => {
-    const {logout, address} = useZKLogin();
+    const {logout, address, client} = useZKLogin();
     const router = useRouter();
+    const [coinCount, setCoinCount] = useState(0);
+    const {faucet} = useTransaction();
+
+    async function getUserCoins() {
+        const coins = await client.getCoins({owner: address || '', coinType: `${PACKAGE_ID}::coin::COIN`});
+        console.log('Request $MW coins ', coins.data)
+        return coins.data;
+    }
+
+    const requestCoins = () => {
+        getUserCoins()
+            .then(data => setCoinCount(data.reduce((sum, coin) => sum + Number(coin.balance), 0)))
+            .catch(() => console.log('Error getting coins:'));
+    }
+    useEffect(() => {
+        requestCoins();
+    }, []);
 
     const searchInput = (
         <Input
@@ -100,16 +121,7 @@ export const Navbar = () => {
                 </NavbarItem>
                 {/*<NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem>*/}
                 <NavbarItem className="hidden md:flex gap-4">
-                    <Button
-                        isExternal
-                        as={Link}
-                        className="text-sm font-normal text-default-600 bg-default-100"
-                        href={siteConfig.links.sponsor}
-                        startContent={<HeartFilledIcon className="text-danger"/>}
-                        variant="flat"
-                    >
-                        Sponsor
-                    </Button>
+
 
                     <Button
                         className="text-sm font-normal text-default-600 bg-default-100"
@@ -120,13 +132,35 @@ export const Navbar = () => {
                     </Button>
                     {address ? (
                         (
-                            <Button
-                                className="text-sm font-normal text-default-600 bg-default-100"
-                                variant="flat"
-                                onPress={() => logout()}
-                            >
-                                Logout
-                            </Button>
+                            <>
+                                <Button
+                                    className="text-sm font-normal text-default-600 bg-default-100"
+                                    variant="flat"
+                                >
+                                    <CoinIcon className="text-danger"/>{` ${coinCount}`}
+                                </Button>
+
+                                <Button
+                                    className="text-sm font-normal text-default-600 bg-default-100"
+                                    onPress={() => {
+                                        faucet(100)
+                                            .then(() => {
+                                                requestCoins();
+                                            });
+
+                                    }}
+                                    variant="flat"
+                                >
+                                    Faucet
+                                </Button>
+                                <Button
+                                    className="text-sm font-normal text-default-600 bg-default-100"
+                                    variant="flat"
+                                    onPress={() => logout()}
+                                >
+                                    Logout
+                                </Button>
+                            </>
                         )
                     ) : null}
                 </NavbarItem>

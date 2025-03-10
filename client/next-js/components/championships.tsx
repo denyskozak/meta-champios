@@ -7,16 +7,20 @@ import {graphql} from "@mysten/sui/graphql/schemas/latest";
 import {Button} from "@heroui/button";
 import {Card, CardFooter, CardHeader} from "@heroui/card";
 import {Image} from "@heroui/image";
-import {convertSuiToMist, MIST_PER_SUI} from "@/utiltiies";
 import {Modal} from "@/components/modal";
+import {PACKAGE_ID} from "@/consts";
+import {Championship, useTransaction} from "@/app/hooks";
+
+
+import {Championship} from "./championship";
+
 
 const gqlClient = new SuiGraphQLClient({
     url: "https://sui-devnet.mystenlabs.com/graphql",
 });
 
-const PACKAGE_ID = process.env.NEXT_PUBLIC_CHAMPIONSHIPS_PACKAGE_ID;
 
-const objectType = `${PACKAGE_ID}::champion_ships::Championship`;
+const objectType = `${PACKAGE_ID}::championships::Championship`;
 
 const chainIdentifierQuery = graphql(`
 	query {
@@ -44,21 +48,6 @@ async function getChampionships() {
 
 // EXAMPLE: Connect to Sui testnet
 
-interface Championship {
-    description: string;
-    entryFee: number;
-    game: string;
-    id: string;
-    participants: any[]; // Replace 'any[]' with a more specific type if needed
-    reward_pool: {
-        value: string;
-    };
-    status: number;
-    team_size: string;
-    title: string;
-}
-
-
 interface MoveChampionship {
     description: string;
     entry_fee: string;
@@ -70,18 +59,31 @@ interface MoveChampionship {
     };
     status: number;
     team_size: string;
+    discord_link: string;
+    participants_limit: number;
     title: string;
+    admin: string;
 }
 
 export default function Championships() {
-    const {address, client, executeTransaction} = useZKLogin();
-    const [championShips, setChampionShips] = useState<Championship[]>([]);
-    const [openChampionshipCard, setOpenChampionshipCard] = useState(false);
+    const {address} = useZKLogin();
+    const {joinChampionship, finishChampionship} = useTransaction();
 
+    const [championShips, setChampionShips] = useState<Championship[]>([]);
+    const [selectedWinnerAddresses, setSelectedWinnerAddresses] = useState<string[]>([]);
+    const [openChampionshipCard, setOpenChampionshipCard] = useState(false);
+    const [selectedChampionship, setSelectedChampionship] = useState<Championship | null>(null)
     const mapChampionship = (item: MoveChampionship): Championship => {
-        const { entry_fee, ...props } = item;
+        const {entry_fee, reward_pool, discord_link, participants_limit, team_size, status, ...props} = item;
         return {
             entryFee: Number(entry_fee),
+            rewardPool: {
+                value: Number(reward_pool?.value),
+            },
+            status: Number(status),
+            teamSize: Number(team_size),
+            participantsLimit: Number(participants_limit),
+            discordLink: discord_link,
             ...props,
         }
     }
@@ -99,7 +101,10 @@ export default function Championships() {
 
                     return [];
                 })
-                .then(items => setChampionShips(items.map(mapChampionship)));
+                .then(items => setChampionShips(
+                    items
+                        .filter(({status}) => status === 0)
+                        .map(mapChampionship)));
         }
 
         fetchList();
@@ -109,72 +114,9 @@ export default function Championships() {
         };
     }, []);
 
-    // Fetch user's coin objects
-    async function getUserCoins() {
-        const coins = await client.getCoins({owner: address || '', coinType: '0x2::sui::SUI'});
-        return coins.data;
-    }
-
-    // Select a coin with sufficient balance
-    // TODO remove any
-    async function selectPaymentCoin(coins: any[], entryFee: number) {
-        for (const coin of coins) {
-            if (Number(coin.balance) >= entryFee) {
-                return coin.coinObjectId;
-            }
-        }
-        throw new Error('No coin with sufficient balance found.');
-    }
-
-    const handleSignAndExecute = async (tx: Transaction) => {
-        if (address) {
-            tx.setSender(address);
-        }
-        tx.setGasBudget(100000000);
-        try {
-            const result = await executeTransaction(tx);
-            console.log('result ', result)
-        } catch (error) {
-            console.log('error ', error)
-        }
-
-    };
-
-    const joinChampionship = async (championship: Championship) => {
-        try {
-            const coins = await getUserCoins();
-
-            const tx = new Transaction();
-            const isFreeChampionship = Number(championship.entryFee) === 0;
-            const paymentCoinId = await selectPaymentCoin(coins, Number(championship.entryFee));
-            // We need a mutable reference to the coin and the championship object
-            // So we pass them as objects in the transaction
-            const champ = tx.object(championship.id);
-
-            if (isFreeChampionship) {
-                tx.moveCall({
-                    target: `${PACKAGE_ID}::champion_ships::join_free`,
-                    arguments: [champ],
-                });
-            } else {
-                const [championshipFee] = tx.splitCoins(tx.gas, [Number(championship.entryFee)]);
-
-                tx.moveCall({
-                    target: `${PACKAGE_ID}::champion_ships::join_paid`,
-                    arguments: [champ, championshipFee],
-                });
-            }
-
-
-            await handleSignAndExecute(tx);
-        } catch (error) {
-            console.error(error);
-            alert("Error joining championship. Check console.");
-        }
-    };
 
     const renderJoinButtonText = (championship: Championship) => (
-        championship.entryFee === 0 ? 'Free' : `Pay (${championship.entryFee / MIST_PER_SUI} SUI)`
+        championship.entryFee === 0 ? 'Free' : `Join (${championship.entryFee} coins)`
     );
 
     return (
@@ -215,7 +157,11 @@ export default function Championships() {
                                 radius="lg"
                                 size="sm"
                                 variant="flat"
-                                onPress={() => setOpenChampionshipCard(true)}
+                                onPress={() => {
+                                    setSelectedChampionship(championship);
+                                    // setSelectedChampionship(championship)
+                                    setOpenChampionshipCard(true);
+                                }}
                             >
                                 View
                             </Button>
@@ -223,7 +169,19 @@ export default function Championships() {
                     </Card>
                 );
             })}
-            <Modal open={openChampionshipCard} onChange={setOpenChampionshipCard} />
+            {/*Detailed*/}
+            <Modal
+                actions={[]}
+                title={selectedChampionship?.title || ''}
+                open={openChampionshipCard}
+                onChange={setOpenChampionshipCard}
+            >
+                {selectedChampionship ? <Championship data={selectedChampionship}/> : null}
+            </Modal>
+            {/*Finish*/}
+
         </div>
     );
+
+
 }

@@ -1,8 +1,9 @@
-module champion_ships::champion_ships {
+module meta_wars::championship {
     use std::string::String;
     use sui::balance;
     use sui::coin;
-    use sui::sui::SUI;
+    use sui::url::Url;
+    use meta_wars::coin::{COIN};
 
     /// Error codes
     const ChampionshipClosedError: u64 = 0x1;
@@ -16,30 +17,40 @@ module champion_ships::champion_ships {
     const ChampionshipNoFreeError: u64 = 0x9;
     const ChampionshipFreeError: u64 = 0x10;
 
+    public struct Participant has drop {
+        address: address,
+        nickname: String,
+        join_time: u64,
+    }
+
     /// The main Championship object
     public struct Championship has key {
         id: UID,
         title: String,
         description: String,
         game: String,
-        team_size: u64, // 1x1, 3x3, 5x5
+        team_size: u64,
+        // 1x1, 3x3, 5x5
         entry_fee: u64,
-        reward_pool: balance::Balance<SUI>,
+        reward_pool: balance::Balance<COIN>,
         admin: address,
-        participants: vector<address>,
-        participants_limit: u64, // max amout of participants
+        participants: vector<Participant>,
+        discord_link: String,
+        participants_limit: u64,
+        // max amout of participants
         /// 0 = Open, 1 = Ongoing, 2 = Closed
         status: u8,
     }
 
     /// Create and share a new Championship object
-    public fun create_championship(
+    public fun create(
         title: String,
         description: String,
         game: String,
         team_size: u64, // 1x1, 3x3, 5x5
         entry_fee: u64,
         participants_limit: u64,
+        discord_link: String,
         ctx: &mut TxContext,
     ) {
         let championship = Championship {
@@ -49,9 +60,10 @@ module champion_ships::champion_ships {
             game,
             team_size, // 1x1, 3x3, 5x5
             entry_fee,
-            reward_pool: balance::zero<SUI>(),
-            admin:  ctx.sender(),
-            participants: vector::empty<address>(),
+            reward_pool: balance::zero<COIN>(),
+            admin: ctx.sender(),
+            discord_link,
+            participants: vector::empty<Participant>(),
             participants_limit,
             status: 0
         };
@@ -62,44 +74,72 @@ module champion_ships::champion_ships {
     /// Join a championship by paying the required entry fee
     public fun join_paid(
         championship: &mut Championship,
-        payment: coin::Coin<SUI>,
+        nickname: String,
+        payment: coin::Coin<COIN>,
         ctx: &mut TxContext
     ) {
         // Ensure the championship is open (status = 0)
         assert!(championship.status == 0, ChampionshipClosedError);
 
         // Ensure the championship has capabity
-        assert!(vector::length(&championship.participants) != championship.participants_limit, ChampionshipCapFullError);
+        assert!(
+            vector::length(&championship.participants) != championship.participants_limit,
+            ChampionshipCapFullError
+        );
         assert!(championship.entry_fee > 0, ChampionshipFreeError);
 
         // Ensure the championship is open (status = 0)
         assert!(championship.entry_fee == payment.value(), UserHasNoEnoughtCoinsToJoin);
 
         coin::put(&mut championship.reward_pool, payment);
-        vector::push_back(&mut championship.participants, ctx.sender());
+
+        let participant = Participant {
+            join_time: 1,
+            nickname,
+            address: ctx.sender()
+        };
+        vector::push_back(&mut championship.participants, participant);
     }
 
     public fun join_free(
         championship: &mut Championship,
+        nickname: String,
         ctx: &mut TxContext
     ) {
         // Ensure the championship is open (status = 0)
         assert!(championship.status == 0, ChampionshipClosedError);
 
         // Ensure the championship has capabity
-        assert!(vector::length(&championship.participants) != championship.participants_limit, ChampionshipCapFullError);
+        assert!(
+            vector::length(&championship.participants) != championship.participants_limit,
+            ChampionshipCapFullError
+        );
         assert!(championship.entry_fee == 0, ChampionshipNoFreeError);
 
         // Add the participant to the championship
-        vector::push_back(&mut championship.participants, ctx.sender());
+        let participant = Participant {
+            join_time: 1,
+            nickname,
+            address: ctx.sender()
+        };
+        vector::push_back(&mut championship.participants, participant);
     }
 
     public fun top_up(
         championship: &mut Championship,
-        payment: coin::Coin<SUI>,
+        payment: coin::Coin<COIN>,
     ) {
         coin::put(&mut championship.reward_pool, payment);
     }
+
+    public fun change_status(
+        championship: &mut Championship,
+        status: u8,
+    ) {
+        championship.status = status;
+    }
+
+    // remove participant method
 
     /// Finish the championship, pay winners, and close it (status = 2)
     public fun finish(
@@ -127,7 +167,7 @@ module champion_ships::champion_ships {
 
         while (i < winner_count) {
             let winner_addr = winner_addresses[i];
-            // Turn part of the Balance<SUI> into a coin
+            // Turn part of the Balance<COIN> into a coin
             let reward = championship.reward_pool.split(reward_per_winner);
 
             let reward_coin = coin::from_balance(reward, ctx);
