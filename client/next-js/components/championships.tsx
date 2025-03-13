@@ -155,7 +155,7 @@ export default function Championships() {
             />
             <CardHeader className="absolute z-10 top-1 flex-col !items-start">
               <p className="text-tiny text-white/60 uppercase font-bold">
-                {championship.team_size}X{championship.team_size}
+                {championship.teamSize}X{championship.teamSize}
               </p>
               <h4 className="text-white font-medium text-large">
                 {championship.title}

@@ -178,9 +178,9 @@ export const useTransaction = () => {
       title: string,
       description: string,
       game: string,
-      teamSize: number,
-      entryFee: number,
-      joinersLimit: number,
+      teamSize: string,
+      entryFee: string,
+      joinersLimit: string,
       discordLink: string,
     ) {
       try {

@@ -5,12 +5,13 @@ import { Button } from "@heroui/button";
 import { Listbox, ListboxItem } from "@heroui/react";
 import { Checkbox, CheckboxGroup } from "@heroui/react";
 
-import { Championship, useTransaction } from "@/app/hooks";
+import { useTransaction } from "@/app/hooks";
+import { Championship as ChampionshipType } from "@/types";
 import { CoinIcon } from "@/components/icons";
 import { renderStatus } from "@/utiltiies";
 
 interface IChampionship {
-  data: Championship;
+  data: ChampionshipType;
 }
 export function Championship({ data }: IChampionship) {
   const { address } = useZKLogin();
