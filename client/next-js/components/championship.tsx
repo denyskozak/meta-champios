@@ -21,7 +21,7 @@ interface IChampionship {
 }
 export function Championship({ data }: IChampionship) {
     const {address} = useZKLogin();
-    const {joinChampionship, finishChampionship} = useTransaction();
+    const {changeStatus, finishChampionship} = useTransaction();
 
     const [selectedWinnerAddresses, setSelectedWinnerAddresses] = useState<string[]>([]);
 
@@ -35,6 +35,7 @@ export function Championship({ data }: IChampionship) {
     return (
         <>
             <span>Status: {renderStatus(data.status)}</span>
+            {data?.status === 0 && <Button onPress={() => changeStatus(data.id, 1)}>Start it!</Button>}
             <Listbox aria-label="Actions" onAction={(key) => alert(key)}>
                 <ListboxItem key="new">ID: {data.id}</ListboxItem>
                 <ListboxItem key="copy">Discord linkn: {data.discordLink}</ListboxItem>
@@ -46,13 +47,13 @@ export function Championship({ data }: IChampionship) {
                 <ListboxItem key="c">Entry Fee: {data.entryFee} <CoinIcon/></ListboxItem>
                 <ListboxItem key="x">Reward Pool: {data.rewardPool?.value} <CoinIcon/></ListboxItem>
                 <ListboxItem key="z">Participants Limit: {data.participantsLimit}</ListboxItem>
-                <ListboxItem key="g" className="text-danger" color="danger">
-                    Delete file
-                </ListboxItem>
+                {/*<ListboxItem key="g" className="text-danger" color="danger">*/}
+                {/*    Delete file*/}
+                {/*</ListboxItem>*/}
             </Listbox>
 
             {/*If Admin*/}
-            {data?.admin === address
+            {data?.status === 1 && data?.admin === address
                 ? (<p>
                     <span>Choose winners</span>
                     <CheckboxGroup defaultValue={[]} onChange={setSelectedWinnerAddresses} label="Select mutiple">

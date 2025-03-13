@@ -19,7 +19,7 @@ interface IModalProps {
     title: string,
     onChange: (open: boolean) => void,
     children: ReactNode,
-    size?: '5xl',
+    size?: '5xl' | 'xl' | 'md' | 'lg' | 'sm',
     actions: Action[],
 }
 

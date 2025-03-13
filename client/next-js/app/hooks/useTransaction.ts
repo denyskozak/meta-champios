@@ -1,28 +1,25 @@
 import {Transaction} from "@mysten/sui/transactions";
-import {useZKLogin} from "react-sui-zk-login-kit";
+import {useLogout, useZKLogin} from "react-sui-zk-login-kit";
 import {PACKAGE_ID} from "@/consts";
 import {Ed25519Keypair} from "@mysten/sui/keypairs/ed25519";
 import {convertSuiToMist} from "@/utiltiies";
+import {useRouter} from "next/navigation";
+import {Championship} from "@/types";
 
-export interface Championship {
-    description: string;
-    entryFee: number;
-    game: string;
-    id: string;
-    participants: any[]; // Replace 'any[]' with a more specific type if needed
-    rewardPool: {
-        value: number;
-    };
-    status: number;
-    participantsLimit: number;
-    teamSize: number;
-    title: string;
-    admin: string;
-    discordLink: string;
-}
+
 
 export const useTransaction = () => {
-    const {address, client, executeTransaction} = useZKLogin();
+    const router = useRouter();
+
+    const { logout } = useLogout();
+
+    const {address, client, executeTransaction} = useZKLogin({
+        onTransactionFailed: () => {
+            console.log('ffffailed tx hook ')
+            logout();
+            router.push('/login')
+        }
+    });
 
     const handleSignAndExecute = async (tx: Transaction) => {
         if (address) {
@@ -31,9 +28,7 @@ export const useTransaction = () => {
         tx.setGasBudget(100000000);
         try {
             const digest = await executeTransaction(tx);
-            if (digest) {
-                await client.waitForTransaction({digest })
-            }
+            if (!digest) throw new Error('No digest tx')
 
             console.log('result tx digest ', digest)
         } catch (error) {
@@ -185,7 +180,7 @@ export const useTransaction = () => {
 
                 // Move Call
                 tx.moveCall({
-                    target: `${PACKAGE_ID}::championship::create_championship`,
+                    target: `${PACKAGE_ID}::championship::create`,
                     arguments: [
                         tx.pure.string(title),
                         tx.pure.string(description),
@@ -207,7 +202,7 @@ export const useTransaction = () => {
 
             tx.moveCall({
                 target: `${PACKAGE_ID}::coin::mint`,
-                arguments: [tx.object('0x8c5f7006174205e4da8da1faf98347a54ea6164b0d1fcadd61b25f39e8e11413'), tx.pure.u64(amount), tx.pure.address(address || '')],
+                arguments: [tx.object('0x6e3dae2d09366d339d7782e9323a3b4059c3e9a966cfbde744001ee56474c07f'), tx.pure.u64(amount), tx.pure.address(address || '')],
             });
             tx.setGasBudget(100000000);
 

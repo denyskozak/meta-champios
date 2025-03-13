@@ -13,6 +13,7 @@ import {getFullnodeUrl} from '@mysten/sui/client';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {ZKLoginProvider} from "react-sui-zk-login-kit";
 // Config options for the networks you want to connect to
+import {ToastProvider} from "@heroui/toast";
 
 const {networkConfig} = createNetworkConfig({
     testnet: {url: getFullnodeUrl('devnet')},
@@ -48,6 +49,7 @@ export function Providers({children, themeProps}: ProvidersProps) {
 
     return (
         <HeroUIProvider navigate={router.push}>
+            <ToastProvider />
             <QueryClientProvider client={queryClient}>
                 <SuiClientProvider networks={networkConfig} defaultNetwork="testnet">
                     <SubProviders>

@@ -1,6 +1,8 @@
+"use client";
 import {useZKLogin, ZKLogin} from "react-sui-zk-login-kit";
 import React, {useEffect} from "react";
 import {generateRandomness} from "@mysten/sui/zklogin";
+import {useRouter} from "next/navigation";
 
 const SUI_PROVER_ENDPOINT = 'https://prover-dev.mystenlabs.com/v1';
 
@@ -17,7 +19,8 @@ const providers = {
 };
 
 export const Login = () => {
-    const {encodedJwt, userSalt, setUserSalt, logout} = useZKLogin();
+    const {encodedJwt, address, setUserSalt} = useZKLogin();
+    const router = useRouter();
 
     useEffect(() => {
         if (encodedJwt) {
@@ -32,10 +35,16 @@ export const Login = () => {
         }
     }, [encodedJwt]);
 
+
     return (
         <ZKLogin
+            disableRemoveHash
             providers={providers}
             proverProvider={SUI_PROVER_ENDPOINT}
+            onSuccess={() => {
+                console.log('22 ', 22)
+                router.push('/');
+            }}
         />
     )
 }

@@ -30,15 +30,18 @@ import {
 import {useZKLogin} from "react-sui-zk-login-kit";
 import {useRouter} from "next/navigation";
 import {PACKAGE_ID} from "@/consts";
-import {useEffect, useState} from "react";
+import React, {useEffect, useState} from "react";
 import {useTransaction} from "@/app/hooks";
 import {data} from "autoprefixer";
+import {CreateChampionship} from "@/components/create-championship";
+import {Modal} from "@/components/modal";
 
 export const Navbar = () => {
     const {logout, address, client} = useZKLogin();
     const router = useRouter();
     const [coinCount, setCoinCount] = useState(0);
     const {faucet} = useTransaction();
+    const [newChampionshipModalVisible, setNewChampionshipModalVisible] = useState(false);
 
     async function getUserCoins() {
         const coins = await client.getCoins({owner: address || '', coinType: `${PACKAGE_ID}::coin::COIN`});
@@ -136,6 +139,16 @@ export const Navbar = () => {
                                 <Button
                                     className="text-sm font-normal text-default-600 bg-default-100"
                                     variant="flat"
+                                    onPress={() => {
+                                        if (!address) {
+                                            router.push('/login');
+                                            return;
+                                        }
+                                        setNewChampionshipModalVisible(true);
+                                    }}>New Championsip</Button>
+                                <Button
+                                    className="text-sm font-normal text-default-600 bg-default-100"
+                                    variant="flat"
                                 >
                                     <CoinIcon className="text-danger"/>{` ${coinCount}`}
                                 </Button>
@@ -196,6 +209,13 @@ export const Navbar = () => {
                     ))}
                 </div>
             </NavbarMenu>
+            <Modal
+                size="sm"
+                open={newChampionshipModalVisible}
+                title="New Championship"
+                onChange={setNewChampionshipModalVisible} actions={[]}>
+                <CreateChampionship onSuccess={() => setNewChampionshipModalVisible(false)}/>
+            </Modal>
         </HeroUINavbar>
     );
 };

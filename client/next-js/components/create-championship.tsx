@@ -4,19 +4,30 @@ import {Championship, useTransaction} from "@/app/hooks";
 import {Form} from "@heroui/form";
 import {Input} from "@heroui/input";
 import {Button} from "@heroui/button";
+import {addToast} from "@heroui/react";
 
-export const CreateChampionship = () => {
+export const CreateChampionship = ({ onSuccess }) => {
     const { createChampionship } = useTransaction();
 
     return (
         <Form
-            className="w-full max-w-xs flex flex-col gap-4"
-            onSubmit={(e) => {
+            className="w-full max-w-xs flex flex-col gap-4 justify-center items-center"
+            onSubmit={async (e) => {
                 e.preventDefault();
                 const { title, description, game, teamSize, entryFee, joinersLimit, discordLink} = Object.fromEntries(new FormData(e.currentTarget));
-                createChampionship(
+                await createChampionship(
                     title, description, game, teamSize, entryFee, joinersLimit, discordLink
                 );
+                onSuccess();
+                setTimeout(() => {
+                    addToast({
+                        title: "You created Championship",
+                        description: `"${title}" has been created!`,
+                        color: "primary",
+                        variant: 'solid'
+                    })
+                }, 1500);
+
             }}
         >
             <Input

@@ -17,7 +17,7 @@ module meta_wars::championship {
     const ChampionshipNoFreeError: u64 = 0x9;
     const ChampionshipFreeError: u64 = 0x10;
 
-    public struct Participant has drop {
+    public struct Participant has drop, store {
         address: address,
         nickname: String,
         join_time: u64,

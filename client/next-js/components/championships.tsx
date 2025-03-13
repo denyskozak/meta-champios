@@ -9,18 +9,16 @@ import {Card, CardFooter, CardHeader} from "@heroui/card";
 import {Image} from "@heroui/image";
 import {Modal} from "@/components/modal";
 import {PACKAGE_ID} from "@/consts";
-import {Championship, useTransaction} from "@/app/hooks";
-
-
-import {Championship} from "./championship";
-
+import { useTransaction } from "@/app/hooks";
+import {Championship} from "@/types";
+import { Championship as ChampionshipContent } from "@/components/championship";
 
 const gqlClient = new SuiGraphQLClient({
     url: "https://sui-devnet.mystenlabs.com/graphql",
 });
 
 
-const objectType = `${PACKAGE_ID}::championships::Championship`;
+const objectType = `${PACKAGE_ID}::championship::Championship`;
 
 const chainIdentifierQuery = graphql(`
 	query {
@@ -53,7 +51,7 @@ interface MoveChampionship {
     entry_fee: string;
     game: string;
     id: string;
-    participants: any[]; // Replace 'any[]' with a more specific type if needed
+    participants: string[]; // Replace 'any[]' with a more specific type if needed
     reward_pool: {
         value: string;
     };
@@ -103,7 +101,7 @@ export default function Championships() {
                 })
                 .then(items => setChampionShips(
                     items
-                        .filter(({status}) => status === 0)
+                        .filter(({status}) => status === 0 || status === 1)
                         .map(mapChampionship)));
         }
 
@@ -176,7 +174,7 @@ export default function Championships() {
                 open={openChampionshipCard}
                 onChange={setOpenChampionshipCard}
             >
-                {selectedChampionship ? <Championship data={selectedChampionship}/> : null}
+                {selectedChampionship ? <ChampionshipContent data={selectedChampionship}/> : null}
             </Modal>
             {/*Finish*/}
 
