@@ -10,12 +10,12 @@ const SUI_PROVER_ENDPOINT = "https://prover-dev.mystenlabs.com/v1";
 const providers = {
   google: {
     clientId:
-      "648851101099-uit5tqa2gf0nr1vvpjorc87k2u4minip.apps.googleusercontent.com",
-    redirectURI: "http://localhost:3000/login",
+    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+    redirectURI: process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URL || "",
   },
   twitch: {
-    clientId: "ltu7mhvfj4l04maulcjcqx1wm5e5zh",
-    redirectURI: "http://localhost:3000/login",
+    clientId:   process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID || '',
+    redirectURI: process.env.NEXT_PUBLIC_TWITCH_REDIRECT_URL || "",
   },
 };
 
