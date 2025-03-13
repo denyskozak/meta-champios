@@ -9,6 +9,8 @@ import { useTransaction } from "@/app/hooks";
 import { Championship as ChampionshipType } from "@/types";
 import { CoinIcon } from "@/components/icons";
 import { renderStatus } from "@/utiltiies";
+import {Modal} from "@/components/modal";
+import {JoinChampionship} from "@/components/join-championship";
 
 interface IChampionship {
   data: ChampionshipType;
@@ -20,6 +22,7 @@ export function Championship({ data }: IChampionship) {
   const [selectedWinnerAddresses, setSelectedWinnerAddresses] = useState<
     string[]
   >([]);
+  const [joinModalVisible, setJoinModalVisible] = useState(false);
 
   const handleFinish = () => {
     if (data) {
@@ -28,12 +31,34 @@ export function Championship({ data }: IChampionship) {
     }
   };
 
+  const isParticipant = data.participants.includes(address);
+  const renderJoinButtonText = (championship: ChampionshipType) =>
+      championship.entryFee === 0
+          ? "Free"
+          : `Join (${championship.entryFee} coins)`;
+
   return (
-    <>
+    <div>
       <span>Status: {renderStatus(data.status)}</span>
       {data?.status === 0 && (
         <Button onPress={() => changeStatus(data.id, 1)}>Start it!</Button>
       )}
+      <Button
+          className="text-tiny text-white bg-black/20"
+          color="default"
+          disabled={isParticipant}
+          radius="lg"
+          size="sm"
+          variant="flat"
+          onPress={() => {
+            setJoinModalVisible(true);
+          }}
+      >
+        {isParticipant
+            ? "Registered"
+            : renderJoinButtonText(data)}
+      </Button>
+
       <Listbox aria-label="Actions" onAction={(key) => alert(key)}>
         <ListboxItem key="new">ID: {data.id}</ListboxItem>
         <ListboxItem key="copy">Discord linkn: {data.discordLink}</ListboxItem>
@@ -66,9 +91,9 @@ export function Championship({ data }: IChampionship) {
             onChange={setSelectedWinnerAddresses}
           >
             {data?.participants
-              ? data?.participants?.map((participant: string) => (
-                  <Checkbox key={participant} value={participant}>
-                    {participant}
+              ? data?.participants?.map(({ address, nickname }) => (
+                  <Checkbox key={address} value={address}>
+                    {nickname}
                   </Checkbox>
                 ))
               : []}
@@ -76,6 +101,17 @@ export function Championship({ data }: IChampionship) {
           <Button onPress={handleFinish}>Complete</Button>
         </p>
       ) : null}
-    </>
+      <Modal
+          size='sm'
+          actions={[]}
+          open={joinModalVisible}
+          title={`Join ${data?.title || ""}`}
+          onChange={setJoinModalVisible}
+      >
+        {data ? (
+            <JoinChampionship championship={data}/>
+        ) : null}
+      </Modal>
+    </div>
   );
 }

@@ -3,6 +3,7 @@ import { useZKLogin, ZKLogin } from "react-sui-zk-login-kit";
 import React, { useEffect } from "react";
 import { generateRandomness } from "@mysten/sui/zklogin";
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 
 const SUI_PROVER_ENDPOINT = "https://prover-dev.mystenlabs.com/v1";
 
@@ -36,14 +37,23 @@ export const Login = () => {
   }, [encodedJwt]);
 
   return (
-    <ZKLogin
-      disableRemoveHash
-      proverProvider={SUI_PROVER_ENDPOINT}
-      providers={providers}
-      onSuccess={() => {
-        console.log("22 ", 22);
-        router.push("/");
-      }}
-    />
+      <div className="flex justify-center flex-col gap-8 items-center -translate-y-24">
+        <Image
+            alt="Logo"
+            height={280}
+            src="/logo_big.png"
+            width={180}
+        />
+        <ZKLogin
+            disableRemoveHash
+            proverProvider={SUI_PROVER_ENDPOINT}
+            providers={providers}
+            onSuccess={() => {
+              console.log("22 ", 22);
+              router.push("/");
+            }}
+        />
+      </div>
+
   );
 };

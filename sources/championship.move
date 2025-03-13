@@ -2,6 +2,7 @@ module meta_wars::championship {
     use std::string::String;
     use sui::balance;
     use sui::coin;
+    use sui::object::id;
     use sui::url::Url;
     use meta_wars::coin::{COIN};
 
@@ -16,6 +17,8 @@ module meta_wars::championship {
     const UserHasNoEnoughtCoinsToJoin: u64 = 0x8;
     const ChampionshipNoFreeError: u64 = 0x9;
     const ChampionshipFreeError: u64 = 0x10;
+    const YouAreNotAdmin: u64 = 0x11;
+    const ChampionshipOnGoing: u64 = 0x12;
 
     public struct Participant has drop, store {
         address: address,
