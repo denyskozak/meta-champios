@@ -1,9 +1,6 @@
 import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
-import { Link } from "@heroui/link";
 import clsx from "clsx";
-import bg from './bg.png';
-import Image from 'next/image'
 
 import { Providers } from "./providers";
 

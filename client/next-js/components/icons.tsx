@@ -187,57 +187,56 @@ export const SearchIcon = (props: IconSvgProps) => (
 );
 
 export const CoinIcon = (props: IconSvgProps) => (
-    <svg
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-    >
-      {/* Radial gradient for a gold coin effect */}
-      <defs>
-        <radialGradient id="goldGradient" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#fff9c4"/>
-          <stop offset="50%" stopColor="#fdd835"/>
-          <stop offset="100%" stopColor="#f57f17"/>
-        </radialGradient>
-      </defs>
+  <svg
+    fill="none"
+    height="24"
+    viewBox="0 0 24 24"
+    width="24"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    {/* Radial gradient for a gold coin effect */}
+    <defs>
+      <radialGradient cx="50%" cy="50%" id="goldGradient" r="50%">
+        <stop offset="0%" stopColor="#fff9c4" />
+        <stop offset="50%" stopColor="#fdd835" />
+        <stop offset="100%" stopColor="#f57f17" />
+      </radialGradient>
+    </defs>
 
-      {/* Outer circle (the coin) */}
-      <circle
-          cx="12"
-          cy="12"
-          r="10"
-          fill="url(#goldGradient)"
-          stroke="#8d6e63"
-          strokeWidth="1"
-      />
+    {/* Outer circle (the coin) */}
+    <circle
+      cx="12"
+      cy="12"
+      fill="url(#goldGradient)"
+      r="10"
+      stroke="#8d6e63"
+      strokeWidth="1"
+    />
 
-      {/* Inner ring for extra dimension */}
-      <circle
-          cx="12"
-          cy="12"
-          r="6"
-          fill="none"
-          stroke="#bcaaa4"
-          strokeWidth="1"
-      />
+    {/* Inner ring for extra dimension */}
+    <circle
+      cx="12"
+      cy="12"
+      fill="none"
+      r="6"
+      stroke="#bcaaa4"
+      strokeWidth="1"
+    />
 
-      {/* Central “circuit” design */}
-      {/* Small center dot */}
-      <circle cx="12" cy="12" r="1" fill="#5d4037"/>
+    {/* Central “circuit” design */}
+    {/* Small center dot */}
+    <circle cx="12" cy="12" fill="#5d4037" r="1" />
 
-      {/* Four lines extending outward */}
-      <line x1="12" y1="11" x2="12" y2="7" stroke="#5d4037" strokeWidth="1"/>
-      <line x1="12" y1="13" x2="12" y2="17" stroke="#5d4037" strokeWidth="1"/>
-      <line x1="11" y1="12" x2="7" y2="12" stroke="#5d4037" strokeWidth="1"/>
-      <line x1="13" y1="12" x2="17" y2="12" stroke="#5d4037" strokeWidth="1"/>
+    {/* Four lines extending outward */}
+    <line stroke="#5d4037" strokeWidth="1" x1="12" x2="12" y1="11" y2="7" />
+    <line stroke="#5d4037" strokeWidth="1" x1="12" x2="12" y1="13" y2="17" />
+    <line stroke="#5d4037" strokeWidth="1" x1="11" x2="7" y1="12" y2="12" />
+    <line stroke="#5d4037" strokeWidth="1" x1="13" x2="17" y1="12" y2="12" />
 
-      {/* Circles at line endpoints (contact points) */}
-      <circle cx="12" cy="7" r="1" fill="#5d4037"/>
-      <circle cx="12" cy="17" r="1" fill="#5d4037"/>
-      <circle cx="7" cy="12" r="1" fill="#5d4037"/>
-      <circle cx="17" cy="12" r="1" fill="#5d4037"/>
-    </svg>
-
+    {/* Circles at line endpoints (contact points) */}
+    <circle cx="12" cy="7" fill="#5d4037" r="1" />
+    <circle cx="12" cy="17" fill="#5d4037" r="1" />
+    <circle cx="7" cy="12" fill="#5d4037" r="1" />
+    <circle cx="17" cy="12" fill="#5d4037" r="1" />
+  </svg>
 );
