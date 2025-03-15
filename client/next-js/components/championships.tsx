@@ -25,7 +25,7 @@ const objectType = `${PACKAGE_ID}::championship::Championship`;
 async function getChampionships(after: string) {
     const chainIdentifierQuery = graphql(`
 	query {
-      objects(first: 10, ${after ? `after: ${after},` : ''} filter: {type: "${objectType}"}) {
+      objects(first: 10, filter: {type: "${objectType}"}) {
         pageInfo {
           hasNextPage
           endCursor
@@ -112,13 +112,13 @@ export default function Championships() {
     const fetchList = async (endCursor = '') => {
         const response = await getChampionships(endCursor)
 
-        if (response?.object?.pageInfo) {
-            setPagination((pag) => ({
-                ...pag,
-                hasNextPage: response?.object?.pageInfo?.hasNextPage,
-                endCursor: response?.object?.pageInfo?.endCursor || ''
-            }))
-        }
+        // if (response?.objects?.pageInfo) {
+        //     setPagination((pag) => ({
+        //         ...pag,
+        //         hasNextPage: response?.objects?.pageInfo?.hasNextPage,
+        //         endCursor: response?.objects?.pageInfo?.endCursor || ''
+        //     }))
+        // }
         if (response?.objects?.nodes) {
             return response?.objects?.nodes?.map(
                 (object): MoveChampionship =>
