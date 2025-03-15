@@ -8,7 +8,7 @@ import { Checkbox, CheckboxGroup } from "@heroui/react";
 import { useTransaction } from "@/app/hooks";
 import { Championship as ChampionshipType } from "@/types";
 import { CoinIcon } from "@/components/icons";
-import { renderStatus } from "@/utiltiies";
+import {convertMistToSui, renderStatus} from "@/utiltiies";
 import {Modal} from "@/components/modal";
 import {JoinChampionship} from "@/components/join-championship";
 
@@ -40,9 +40,11 @@ export function Championship({ data }: IChampionship) {
   return (
     <div>
       <span>Status: {renderStatus(data.status)}</span>
+        <br />
       {data?.status === 0 && (
         <Button onPress={() => changeStatus(data.id, 1)}>Start it!</Button>
       )}
+        <br />
       <Button
           className="text-tiny text-white bg-black/20"
           color="default"
@@ -59,7 +61,7 @@ export function Championship({ data }: IChampionship) {
             : renderJoinButtonText(data)}
       </Button>
 
-      <Listbox aria-label="Actions" onAction={(key) => alert(key)}>
+      <Listbox aria-label="Actions">
         <ListboxItem key="new">ID: {data.id}</ListboxItem>
         <ListboxItem key="copy">Discord linkn: {data.discordLink}</ListboxItem>
         <ListboxItem key="a">Admin: {data.admin}</ListboxItem>
@@ -71,7 +73,7 @@ export function Championship({ data }: IChampionship) {
           Entry Fee: {data.entryFee} <CoinIcon />
         </ListboxItem>
         <ListboxItem key="x">
-          Reward Pool: {data.rewardPool?.value} <CoinIcon />
+          Reward Pool: {convertMistToSui(data.rewardPool?.value)} <CoinIcon />
         </ListboxItem>
         <ListboxItem key="z">
           Participants Limit: {data.participantsLimit}

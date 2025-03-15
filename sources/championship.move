@@ -3,8 +3,9 @@ module meta_wars::championship {
     use sui::balance;
     use sui::coin;
     use sui::object::id;
+    use sui::sui::{SUI};
     use sui::url::Url;
-    use meta_wars::coin::{COIN};
+    const MIST_PER_SUI: u64 = 1_000_000_000;
 
     /// Error codes
     const ChampionshipClosedError: u64 = 0x1;
@@ -14,7 +15,7 @@ module meta_wars::championship {
     const EmptyRewardPoolError: u64 = 0x5;
     const ChampionshipCapFullError: u64 = 0x6;
     const ChampionshipLimitAmmountdError: u64 = 0x7;
-    const UserHasNoEnoughtCoinsToJoin: u64 = 0x8;
+    const UserHasNoEnoughtCoins: u64 = 0x8;
     const ChampionshipNoFreeError: u64 = 0x9;
     const ChampionshipFreeError: u64 = 0x10;
     const YouAreNotAdmin: u64 = 0x11;
@@ -23,6 +24,7 @@ module meta_wars::championship {
     public struct Participant has drop, store {
         address: address,
         nickname: String,
+        coin_amount: u64,
         join_time: u64,
     }
 
@@ -35,7 +37,7 @@ module meta_wars::championship {
         team_size: u64,
         // 1x1, 3x3, 5x5
         entry_fee: u64,
-        reward_pool: balance::Balance<COIN>,
+        reward_pool: balance::Balance<SUI>,
         admin: address,
         participants: vector<Participant>,
         discord_link: String,
@@ -54,8 +56,14 @@ module meta_wars::championship {
         entry_fee: u64,
         participants_limit: u64,
         discord_link: String,
+        payment: coin::Coin<SUI>,
         ctx: &mut TxContext,
     ) {
+        assert!(payment.value() == MIST_PER_SUI, UserHasNoEnoughtCoins);
+
+        let mut reward_pool = balance::zero<SUI>();
+        coin::put(&mut reward_pool, payment);
+
         let championship = Championship {
             id: object::new(ctx),
             title,
@@ -63,7 +71,7 @@ module meta_wars::championship {
             game,
             team_size, // 1x1, 3x3, 5x5
             entry_fee,
-            reward_pool: balance::zero<COIN>(),
+            reward_pool,
             admin: ctx.sender(),
             discord_link,
             participants: vector::empty<Participant>(),
@@ -78,7 +86,7 @@ module meta_wars::championship {
     public fun join_paid(
         championship: &mut Championship,
         nickname: String,
-        payment: coin::Coin<COIN>,
+        payment: coin::Coin<SUI>,
         ctx: &mut TxContext
     ) {
         // Ensure the championship is open (status = 0)
@@ -92,13 +100,15 @@ module meta_wars::championship {
         assert!(championship.entry_fee > 0, ChampionshipFreeError);
 
         // Ensure the championship is open (status = 0)
-        assert!(championship.entry_fee == payment.value(), UserHasNoEnoughtCoinsToJoin);
+        let paymentAmount = payment.value();
+        assert!(championship.entry_fee == paymentAmount, UserHasNoEnoughtCoins);
 
         coin::put(&mut championship.reward_pool, payment);
 
         let participant = Participant {
             join_time: 1,
             nickname,
+            coin_amount: paymentAmount,
             address: ctx.sender()
         };
         vector::push_back(&mut championship.participants, participant);
@@ -123,6 +133,7 @@ module meta_wars::championship {
         let participant = Participant {
             join_time: 1,
             nickname,
+            coin_amount: 0,
             address: ctx.sender()
         };
         vector::push_back(&mut championship.participants, participant);
@@ -130,7 +141,7 @@ module meta_wars::championship {
 
     public fun top_up(
         championship: &mut Championship,
-        payment: coin::Coin<COIN>,
+        payment: coin::Coin<SUI>,
     ) {
         coin::put(&mut championship.reward_pool, payment);
     }
@@ -170,7 +181,7 @@ module meta_wars::championship {
 
         while (i < winner_count) {
             let winner_addr = winner_addresses[i];
-            // Turn part of the Balance<COIN> into a coin
+            // Turn part of the Balance<SUI> into a coin
             let reward = championship.reward_pool.split(reward_per_winner);
 
             let reward_coin = coin::from_balance(reward, ctx);

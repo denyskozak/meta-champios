@@ -14,6 +14,7 @@ import {Championship} from "@/types";
 import {Championship as ChampionshipContent} from "@/components/championship";
 import {JoinChampionship} from "@/components/join-championship";
 import {CoinIcon} from "@/components/icons";
+import {convertMistToSui} from "@/utiltiies";
 
 const gqlClient = new SuiGraphQLClient({
     url: "https://sui-devnet.mystenlabs.com/graphql",
@@ -203,7 +204,7 @@ export default function Championships() {
                                >
                                    Prize:
                                    <CoinIcon className="text-danger" />
-                                   {championship?.rewardPool?.value}
+                                   {convertMistToSui(championship?.rewardPool?.value)}
                                </Button>
                            </CardFooter>
                        </Card>

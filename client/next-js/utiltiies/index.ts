@@ -1,7 +1,9 @@
 export const MIST_PER_SUI = 1000000000;
 
-export function convertSuiToMist(suiAmount: number) {
-  return suiAmount * MIST_PER_SUI;
+export function convertMistToSui(suiAmount?: number) {
+  if (suiAmount === undefined) return '0';
+
+  return (suiAmount / MIST_PER_SUI).toFixed(2);
 }
 
 export const renderStatus = (status: number): string => {
@@ -19,3 +21,4 @@ export const renderStatus = (status: number): string => {
       return "Unknown";
   }
 };
+

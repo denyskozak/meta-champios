@@ -34,19 +34,20 @@ import {PACKAGE_ID} from "@/consts";
 import {useTransaction} from "@/app/hooks";
 import {CreateChampionship} from "@/components/create-championship";
 import {Modal} from "@/components/modal";
+import {convertMistToSui, MIST_PER_SUI} from "@/utiltiies";
+import Image from "next/image";
 
 export const Navbar = () => {
     const {logout, address, client} = useZKLogin();
     const router = useRouter();
     const [coinCount, setCoinCount] = useState(0);
-    const {faucet} = useTransaction();
     const [newChampionshipModalVisible, setNewChampionshipModalVisible] =
         useState(false);
 
     async function getUserCoins() {
         const coins = await client.getCoins({
             owner: address || "",
-            coinType: `${PACKAGE_ID}::coin::COIN`,
+            coinType: '0x2::sui::SUI',
         });
 
         console.log("Request $MW coins ", coins.data);
@@ -56,24 +57,23 @@ export const Navbar = () => {
 
     const requestCoins = () => {
         getUserCoins()
-            .then((data) =>
-                setCoinCount(data.reduce((sum, coin) => sum + Number(coin.balance), 0)),
+            .then((data) => {
+                    setCoinCount(
+                        convertMistToSui(
+                            data.reduce((sum, coin) => sum + Number(coin.balance), 0)
+                        )
+                    );
+                },
             )
             .catch(() => console.log("Error getting coins:"));
     };
 
     useLayoutEffect(() => {
-        const id = setInterval(() => {
-            if (address) {
-                requestCoins();
-            }
-
-        }, 5000);
-
-        return () => {
-            clearInterval(id);
+        if (address) {
+            requestCoins();
         }
-    }, []);
+
+    }, [address]);
 
     const searchInput = (
         <Input
@@ -100,9 +100,14 @@ export const Navbar = () => {
         <HeroUINavbar maxWidth="xl" position="sticky">
             <NavbarContent className="basis-1/5 sm:basis-full" justify="start">
                 <NavbarBrand as="li" className="gap-3 max-w-fit">
-                    <NextLink className="flex justify-start items-center gap-1" href="/">
-                        <Logo/>
-                        <p className="font-bold text-inherit">MetaChampions</p>
+                    <NextLink className="flex justify-start items-center gap-2" href="/">
+                        <Image
+                            alt="Logo"
+                            height={32}
+                            src="/logo_big.png"
+                            width={32}
+                        />
+                        <p className="font-bold text-inherit">Meta Wars</p>
                     </NextLink>
                 </NavbarBrand>
                 <ul className="hidden lg:flex gap-4 justify-start ml-2">
@@ -172,17 +177,6 @@ export const Navbar = () => {
                                 {` ${coinCount}`}
                             </Button>
 
-                            <Button
-                                className="text-sm font-normal text-default-600 bg-default-100"
-                                variant="flat"
-                                onPress={() => {
-                                    faucet(100).then(() => {
-                                        requestCoins();
-                                    });
-                                }}
-                            >
-                                Faucet
-                            </Button>
                             <Button
                                 className="text-sm font-normal text-default-600 bg-default-100"
                                 variant="flat"

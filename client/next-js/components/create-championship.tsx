@@ -45,7 +45,8 @@ export const CreateChampionship = ({
                     joinersLimit,
                     discordLink,
                 );
-                onSuccess?.();
+                // onSuccess?.();
+                window.dispatchEvent(new Event('update-championships'))
                 setTimeout(() => {
                     addToast({
                         title: "You created Championship",

@@ -1,4 +1,4 @@
-import {Transaction} from "@mysten/sui/transactions";
+import {Transaction, Inputs} from "@mysten/sui/transactions";
 import {useLogout, useZKLogin} from "react-sui-zk-login-kit";
 import {Ed25519Keypair} from "@mysten/sui/keypairs/ed25519";
 import {useRouter} from "next/navigation";
@@ -6,6 +6,8 @@ import {useRouter} from "next/navigation";
 import {PACKAGE_ID} from "@/consts";
 import {Championship} from "@/types";
 import {TransactionObjectArgument} from "@mysten/sui/transactions";
+import {MIST_PER_SUI} from "@/utiltiies";
+import {add} from "@internationalized/date/src/manipulation";
 
 export const useTransaction = () => {
 
@@ -16,8 +18,15 @@ export const useTransaction = () => {
         if (address) {
             tx.setSender(address);
         }
-        tx.setGasBudget(100000000);
         try {
+            tx.setGasBudget(100000000);
+
+            // const dryResult = await client.dryRunTransactionBlock({
+            //     transactionBlock: await tx.build({ client })
+            // });
+            //
+            // console.log('dryResult ', dryResult)
+            
             const digest = await executeTransaction(tx);
 
             if (!digest) throw new Error("No digest tx");
@@ -32,39 +41,18 @@ export const useTransaction = () => {
     async function getUserCoins() {
         const coins = await client.getCoins({
             owner: address || "",
-            coinType: `${PACKAGE_ID}::coin::COIN`,
+            coinType: '0x2::sui::SUI',
         });
 
         return coins.data;
     }
 
-    // Select a coin with sufficient balance
-    // TODO remove any
-    function selectPaymentCoin(coins: any[], entryFee: number, tx: Transaction): TransactionObjectArgument {
-        for (const coin of coins) {
-            if (Number(coin.balance) >= entryFee) {
-                return tx.object(coin.coinObjectId);
-            }
-        }
-
-        const maybeCoins = [];
-
-        let tmpSum = 0;
-        for (const coin of coins) {
-            if (tmpSum < entryFee) {
-                tmpSum += Number(coin.balance);
-                maybeCoins.push(coin);
-            } else {
-                console.log('maybeCoins ', maybeCoins)
-                console.log('tmpSum ', tmpSum)
-                const firstCoin = maybeCoins.shift();
-                const firstCoinInput = tx.object(firstCoin.coinObjectId);
-                 tx.mergeCoins(firstCoinInput, maybeCoins.map(item => tx.object(item.coinObjectId)))
-                return firstCoinInput
-            }
-        }
-
-        throw new Error("No coin with sufficient balance found.");
+    const splitCoinForHaveGas = async () => {
+        const txSplit = new Transaction();
+        const [gasCoin] = txSplit.splitCoins(txSplit.gas, [MIST_PER_SUI * 0.1]);
+        txSplit.transferObjects([gasCoin], address || '');
+        txSplit.setSender(address || '');
+        await executeTransaction(txSplit);
     }
 
     return {
@@ -148,7 +136,6 @@ export const useTransaction = () => {
         },
         async joinChampionship(championship: Championship, nickname: string) {
             try {
-                const coins = await getUserCoins();
 
                 const tx = new Transaction();
                 const isFreeChampionship = Number(championship.entryFee) === 0;
@@ -164,13 +151,14 @@ export const useTransaction = () => {
                         arguments: [champ, nicknameParam],
                     });
                 } else {
-                    const paymentCoinId = selectPaymentCoin(
-                        coins,
-                        Number(championship.entryFee),
-                        tx,
-                    );
+                    const coins = await getUserCoins();
 
-                    const [championshipFee] = tx.splitCoins(paymentCoinId, [
+                    if (coins.length === 1) {
+                        await splitCoinForHaveGas();
+                    }
+
+
+                    const [championshipFee] = tx.splitCoins(tx.gas, [
                         Number(championship.entryFee),
                     ]);
 
@@ -196,8 +184,17 @@ export const useTransaction = () => {
             discordLink: string,
         ) {
             try {
+                const coins = await getUserCoins();
+
+                if (coins.length === 1) {
+                   await splitCoinForHaveGas();
+                }
+
                 const tx = new Transaction();
 
+                const [championshipCreateFee] = tx.splitCoins(tx.gas, [
+                    MIST_PER_SUI,
+                ]);
                 // Move Call
                 tx.moveCall({
                     target: `${PACKAGE_ID}::championship::create`,
@@ -206,9 +203,10 @@ export const useTransaction = () => {
                         tx.pure.string(description),
                         tx.pure.string(game),
                         tx.pure.u64(teamSize),
-                        tx.pure.u64(entryFee),
+                        tx.pure.u64(Number(entryFee) * MIST_PER_SUI),
                         tx.pure.u64(joinersLimit),
                         tx.pure.string(discordLink),
+                        championshipCreateFee
                     ],
                 });
                 await handleSignAndExecute(tx);
@@ -216,32 +214,6 @@ export const useTransaction = () => {
                 console.error(error);
                 alert("Error creating championship. See console.");
             }
-        },
-        async faucet(amount: number) {
-            const tx = new Transaction();
-
-            tx.moveCall({
-                target: `${PACKAGE_ID}::coin::mint`,
-                arguments: [
-                    tx.object(
-                        process.env.NEXT_PUBLIC_CHAMPIONSHIPS_TREASURE_CAP_ADDRESS || '',
-                    ),
-                    tx.pure.u64(amount),
-                    tx.pure.address(address || ""),
-                ],
-            });
-            tx.setGasBudget(100000000);
-
-            const secretKey = `${process.env.NEXT_PUBLIC_CHAMPIONSHIPS_TREASURE_CAP_KEY}`;
-
-            const keypair = Ed25519Keypair.fromSecretKey(secretKey);
-
-            const result = await client.signAndExecuteTransaction({
-                signer: keypair,
-                transaction: tx,
-            });
-
-            await client.waitForTransaction({digest: result.digest});
         },
     };
 };
