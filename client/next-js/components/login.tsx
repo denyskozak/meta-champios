@@ -10,12 +10,11 @@ const SUI_PROVER_ENDPOINT = "https://prover-dev.mystenlabs.com/v1";
 // values can be stored in .env
 const providers = {
   google: {
-    clientId:
-    process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || '',
+    clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
     redirectURI: process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URL || "",
   },
   twitch: {
-    clientId:   process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID || '',
+    clientId: process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID || "",
     redirectURI: process.env.NEXT_PUBLIC_TWITCH_REDIRECT_URL || "",
   },
 };
@@ -37,23 +36,17 @@ export const Login = () => {
   }, [encodedJwt]);
 
   return (
-      <div className="flex justify-center flex-col gap-8 items-center -translate-y-24">
-        <Image
-            alt="Logo"
-            height={280}
-            src="/logo_big.png"
-            width={180}
-        />
-        <ZKLogin
-            disableRemoveHash
-            proverProvider={SUI_PROVER_ENDPOINT}
-            providers={providers}
-            onSuccess={() => {
-              console.log("22 ", 22);
-              router.push("/");
-            }}
-        />
-      </div>
-
+    <div className="flex justify-center flex-col gap-8 items-center -translate-y-24">
+      <Image alt="Logo" height={280} src="/logo_big.png" width={180} />
+      <ZKLogin
+        disableRemoveHash
+        proverProvider={SUI_PROVER_ENDPOINT}
+        providers={providers}
+        onSuccess={() => {
+          console.log("22 ", 22);
+          router.push("/");
+        }}
+      />
+    </div>
   );
 };
