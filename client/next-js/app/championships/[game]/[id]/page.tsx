@@ -16,8 +16,9 @@ export default function ChampionshipPage({params: paramsPromise}: { params: Prom
     const {data, isPending, isError, error, refetch} = useSuiClientQuery(
         'getObject',
         {
-            id: params.id, options: {
-                showContent: true
+            id: params.id,
+            options: {
+                showContent: true,
             }
         },
         {
@@ -26,13 +27,10 @@ export default function ChampionshipPage({params: paramsPromise}: { params: Prom
     );
 
     useEffect(() => {
-        if (data?.data?.content?.fields) {
+        if (data?.data?.content?.dataType === 'moveObject' && data?.data?.content?.fields) {
             const { fields } = data.data.content;
             setChampionship(
-                mapChampionshipRPC({
-                    ...data?.data?.content?.fields as MoveChampionshipRPC,
-
-                })
+                mapChampionshipRPC(fields as any)
             )
         }
     }, [data]);

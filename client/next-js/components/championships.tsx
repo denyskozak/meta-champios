@@ -3,7 +3,7 @@ import React, {useLayoutEffect, useState} from "react";
 import {useZKLogin} from "react-sui-zk-login-kit";
 import {SuiGraphQLClient} from "@mysten/sui/graphql";
 import {graphql} from "@mysten/sui/graphql/schemas/latest";
-import {Button} from "@heroui/react";
+import {Button, Chip} from "@heroui/react";
 import {Card, CardFooter, CardHeader} from "@heroui/card";
 import {Image} from "@heroui/image";
 
@@ -26,8 +26,8 @@ const objectType = `${PACKAGE_ID}::championship::Championship`;
 
 async function getChampionships(game: string, after: string) {
     const chainIdentifierQuery = graphql(`
-	query () {
-      objects(first: 10, filter: {type: "${objectType}"}) {
+	query {
+      objects(first: 10, ${after ? "after: $after," : ""} filter: {type: "${objectType}"}) {
         pageInfo {
           hasNextPage
           endCursor
@@ -45,7 +45,7 @@ async function getChampionships(game: string, after: string) {
 
     const result = await gqlClient.query({
         query: chainIdentifierQuery,
-        variables: {after: null}
+        variables: {after}
     });
 
     return result.data;
@@ -54,7 +54,6 @@ async function getChampionships(game: string, after: string) {
 // Sui JS SDK
 
 // EXAMPLE: Connect to Sui testnet
-
 
 interface ChampionshipsProps {
     game: string;
@@ -77,13 +76,14 @@ export default function Championships({ game }: ChampionshipsProps) {
     const fetchList = async (endCursor = '') => {
         const response = await getChampionships(game, endCursor)
 
-        // if (response?.objects?.pageInfo) {
-        //     setPagination((pag) => ({
-        //         ...pag,
-        //         hasNextPage: response?.objects?.pageInfo?.hasNextPage,
-        //         endCursor: response?.objects?.pageInfo?.endCursor || ''
-        //     }))
-        // }
+        console.log('response?.objects ', response?.objects)
+        if (response?.objects?.pageInfo) {
+            setPagination((pag) => ({
+                ...pag,
+                hasNextPage: response?.objects?.pageInfo?.hasNextPage,
+                endCursor: response?.objects?.pageInfo?.endCursor || ''
+            }))
+        }
         if (response?.objects?.nodes) {
             return response?.objects?.nodes?.map(
                 (object): MoveChampionshipGraphQL =>
@@ -112,30 +112,32 @@ export default function Championships({ game }: ChampionshipsProps) {
     }, []);
 
     const loadMoreHandle = async () => {
+        console.log('pagination.endCursor ', pagination.endCursor)
         const nextItems = await fetchList(pagination.endCursor);
+        console.log('nextItems ', nextItems)
         setChampionShips((list) => [
             ...list,
-            ...nextItems.filter(({status}) => status === 0 || status === 1)
-                .map(mapChampionshipGraphQL)
+            // ...nextItems.filter(({status}) => status === 0 || status === 1)
+            //     .map(mapChampionshipGraphQL)
         ]);
     }
 
     return (
-        <div className="flex flex-col gap-8 items-center justify-center">
+        <div className="flex flex-col gap-8 items-center justify-center flex-col">
+            <h1>{game}</h1>
             <div className="flex flex-wrap gap-8 items-center justify-center">
-                <h1>{game}</h1>
+
                 {championShips.map((championship) => {
 
                     return (
                         <Card
                             key={championship.id}
-                            isFooterBlurred
                             className="border-none p-2"
                             radius="lg"
                             style={{minWidth: 200, maxWidth: 200}}
                             isPressable
                             onPress={() => {
-                                router.push(`/championships/${championship.id}`)
+                                router.push(`/championships/${game}/${championship.id}`)
                             }}
                         >
                             <Image
@@ -155,17 +157,12 @@ export default function Championships({ game }: ChampionshipsProps) {
                             </CardHeader>
                             <CardFooter className="flex justify-between ">
 
-                                <Button
-                                    className="text-tiny text-white bg-black/20"
-                                    color="default"
-                                    radius="lg"
-                                    size="sm"
-                                    variant="flat"
-                                >
-                                    Prize:
-                                    <CoinIcon className="text-danger"/>
+                                <Chip endContent={<CoinIcon className="text-danger" height={16} width={16}/>}  size="lg" color="warning" variant="shadow">
+                                    Prize:&nbsp;
                                     {convertMistToSui(championship?.rewardPool?.value)}
-                                </Button>
+                                </Chip>
+
+
                             </CardFooter>
                         </Card>
                     );
@@ -173,8 +170,8 @@ export default function Championships({ game }: ChampionshipsProps) {
             </div>
 
             {
-                championShips.length
-                    ? <Button disabled={!pagination.hasNextPage} size="lg" onPress={loadMoreHandle}>Load More</Button>
+                championShips.length && pagination.hasNextPage
+                    ? <Button size="lg" onPress={loadMoreHandle}>Load More</Button>
                     : null
             }
 
