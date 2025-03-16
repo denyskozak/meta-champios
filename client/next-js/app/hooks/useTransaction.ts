@@ -98,29 +98,8 @@ export const useTransaction = () => {
         },
         async topUpChampionship(championshipId: string, topUpAmount: number) {
             try {
-                // 1. Get the user’s coins (whatever logic you already have)
-                const coins = await getUserCoins();
-
-                // 3. Build the transaction
                 const tx = new Transaction();
 
-                // 2. Pick a coin that has enough balance to cover topUpAmount
-                const paymentCoinId = selectPaymentCoin(coins, topUpAmount, tx);
-
-
-                // - "Object" references for championship and the chosen coin
-                const champ = tx.object(championshipId);
-
-                // - Split the exact top-up amount off the chosen coin
-                const [topUpCoin] = tx.splitCoins(paymentCoinId, [topUpAmount]);
-
-                // 4. Invoke your Move function
-                tx.moveCall({
-                    target: `${PACKAGE_ID}::championship::top_up`,
-                    arguments: [champ, topUpCoin],
-                });
-
-                // 5. Sign & execute the transaction
                 await handleSignAndExecute(tx);
                 console.log("Top-up succeeded!");
             } catch (error) {
