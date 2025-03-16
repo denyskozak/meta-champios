@@ -1,5 +1,5 @@
 "use client";
-import React, {useState} from "react";
+import React, {useMemo, useState} from "react";
 import {useZKLogin} from "react-sui-zk-login-kit";
 import {Button} from "@heroui/button";
 import {Listbox, ListboxItem} from "@heroui/react";
@@ -35,7 +35,7 @@ export function Championship({data}: IChampionship) {
         }
     };
 
-    const isParticipant = data.participants.includes(address);
+    const isParticipant = useMemo(() => data.participants.some(participant => participant.address === address), [data.participants]);
     const renderJoinButtonText = (championship: ChampionshipType) =>
         championship.entryFee === 0
             ? "Free"
