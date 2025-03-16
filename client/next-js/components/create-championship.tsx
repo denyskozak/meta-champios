@@ -4,7 +4,12 @@ import {Button} from "@heroui/button";
 import {addToast} from "@heroui/react";
 
 import {useTransaction} from "@/app/hooks";
-import {Championship} from "@/types";
+import {Select, SelectItem} from "@heroui/react";
+import {CoinIcon} from "@/components/icons";
+
+export const games = [
+    {key: "LoL", label: "League of Legends"},
+];
 
 export const CreateChampionship = ({
                                        onSuccess,
@@ -15,9 +20,11 @@ export const CreateChampionship = ({
 
     return (
         <Form
-            className="w-full max-w-xs flex flex-col gap-4 justify-center items-center"
+            className="w-full max-w-xs flex flex-col gap-4 justify-center items-center "
             onSubmit={async (e) => {
                 e.preventDefault();
+                try {
+
                 const {
                     title,
                     description,
@@ -45,16 +52,23 @@ export const CreateChampionship = ({
                     joinersLimit,
                     discordLink,
                 );
-                // onSuccess?.();
+                onSuccess?.();
                 window.dispatchEvent(new Event('update-championships'))
-                setTimeout(() => {
                     addToast({
-                        title: "You created Championship",
+                        title: "You've created new championship",
                         description: `"${title}" has been created!`,
                         color: "primary",
                         variant: "solid",
                     });
-                }, 1500);
+                } catch (error) {
+                    console.error('Crate Champ', error);
+                    addToast({
+                        title: "Fail to create championship",
+                        description: "Something went wrong",
+                        color: "danger",
+                        variant: "solid",
+                    });
+                }
             }}
         >
             <Input
@@ -77,15 +91,22 @@ export const CreateChampionship = ({
                 type="text"
             />
 
-            <Input
-                isRequired
-                errorMessage="Please enter a valid game"
-                label="Game"
-                labelPlacement="outside"
-                name="game"
-                placeholder="Enter the game name"
-                type="text"
-            />
+            {/*<Input*/}
+            {/*    isRequired*/}
+            {/*    errorMessage="Please enter a valid game"*/}
+            {/*    label="Game"*/}
+            {/*    labelPlacement="outside"*/}
+            {/*    name="game"*/}
+            {/*    placeholder="Enter the game name"*/}
+            {/*    type="text"*/}
+            {/*/>*/}
+
+            <Select name="game" className="max-w-xs" label="Game" placeholder="Select a game">
+                {games.map((game) => (
+                    <SelectItem key={game.key}>{game.label}</SelectItem>
+                ))}
+            </Select>
+
             <Input
                 isRequired
                 errorMessage="Please enter Discord link"
@@ -127,8 +148,8 @@ export const CreateChampionship = ({
             />
 
             <div className="flex gap-2">
-                <Button color="primary" type="submit">
-                    Submit
+                <Button color="primary" type="submit" className="gap-0">
+                    Create (Pay 1&nbsp;<CoinIcon width={16} height={16} color="white" />)
                 </Button>
                 <Button type="reset" variant="flat">
                     Reset

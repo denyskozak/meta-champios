@@ -35,23 +35,23 @@ export function Championship({ data }: IChampionship) {
   const renderJoinButtonText = (championship: ChampionshipType) =>
       championship.entryFee === 0
           ? "Free"
-          : `Join (${championship.entryFee} coins)`;
+          : `Join (${convertMistToSui(championship.entryFee)} coins)`;
 
   return (
     <div>
       <span>Status: {renderStatus(data.status)}</span>
         <br />
       {data?.status === 0 && (
-        <Button onPress={() => changeStatus(data.id, 1)}>Start it!</Button>
+        <Button variant="solid" color="primary" onPress={() => changeStatus(data.id, 1)}>Start it!</Button>
       )}
         <br />
       <Button
           className="text-tiny text-white bg-black/20"
-          color="default"
           disabled={isParticipant}
           radius="lg"
           size="sm"
-          variant="flat"
+          variant="solid"
+          color="primary"
           onPress={() => {
             setJoinModalVisible(true);
           }}
@@ -70,7 +70,7 @@ export function Championship({ data }: IChampionship) {
         <ListboxItem key="f">Game: {data.game}</ListboxItem>
         <ListboxItem key="v">Team Size: {data.teamSize}</ListboxItem>
         <ListboxItem key="c">
-          Entry Fee: {data.entryFee} <CoinIcon />
+          Entry Fee: {convertMistToSui(data.entryFee)} <CoinIcon />
         </ListboxItem>
         <ListboxItem key="x">
           Reward Pool: {convertMistToSui(data.rewardPool?.value)} <CoinIcon />
@@ -84,7 +84,7 @@ export function Championship({ data }: IChampionship) {
       </Listbox>
 
       {/*If Admin*/}
-      {data?.status === 1 && data?.admin === address ? (
+      { data?.admin === address ? (
         <p>
           <span>Choose winners</span>
           <CheckboxGroup
@@ -100,7 +100,7 @@ export function Championship({ data }: IChampionship) {
                 ))
               : []}
           </CheckboxGroup>
-          <Button onPress={handleFinish}>Complete</Button>
+            {data?.status === 1 && <Button onPress={handleFinish}>Complete</Button>}
         </p>
       ) : null}
       <Modal

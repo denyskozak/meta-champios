@@ -8,6 +8,8 @@ import {useGSAP} from '@gsap/react';
 import Championships from "@/components/championships";
 import {title as getTitle, subtitle} from "@/components/primitives";
 import {useAnimation} from "@/app/hooks/useAnimation";
+import { Button } from "@heroui/react";
+import Link from 'next/link'
 
 // Sui JS SDK
 
@@ -19,10 +21,6 @@ const PACKAGE_ID = process.env.NEXT_PUBLIC_CHAMPIONSHIPS_PACKAGE_ID;
 gsap.registerPlugin(useGSAP);
 
 export default function General() {
-    const router = useRouter();
-
-    const {address} = useZKLogin();
-
     const container = useRef(null);
     const logoRef = useRef(null);
     const [fadeInClass] = useAnimation();
@@ -104,20 +102,13 @@ export default function General() {
                 </div>
             </header>
             <section
-                className="flex justify-center items-center flex-col gap-8"
-                style={{
-                    paddingLeft: "2 rem",
-                    paddingRight: "2 rem",
-                    margin: "0 auto",
-                    marginBottom: "2rem",
-                }}
+                className="flex justify-center items-center  fade-in-animation"
+
             >
                 {/*<div>*/}
                 {/*    <span className={`${getTitle()} fade-in-animation`}>Championships&nbsp;</span>*/}
                 {/*</div>*/}
-                <div className="fade-in-animation">
-                    <Championships/>
-                </div>
+                <Button ><Link href="/championships">Explore Championships</Link></Button>
 
             </section>
         </div>

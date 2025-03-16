@@ -1,13 +1,8 @@
-import {Transaction, Inputs} from "@mysten/sui/transactions";
-import {useLogout, useZKLogin} from "react-sui-zk-login-kit";
-import {Ed25519Keypair} from "@mysten/sui/keypairs/ed25519";
-import {useRouter} from "next/navigation";
-
+import {Transaction} from "@mysten/sui/transactions";
+import {useZKLogin} from "react-sui-zk-login-kit";
 import {PACKAGE_ID} from "@/consts";
 import {Championship} from "@/types";
-import {TransactionObjectArgument} from "@mysten/sui/transactions";
 import {MIST_PER_SUI} from "@/utiltiies";
-import {add} from "@internationalized/date/src/manipulation";
 
 export const useTransaction = () => {
 
@@ -18,23 +13,21 @@ export const useTransaction = () => {
         if (address) {
             tx.setSender(address);
         }
-        try {
-            tx.setGasBudget(100000000);
 
-            // const dryResult = await client.dryRunTransactionBlock({
-            //     transactionBlock: await tx.build({ client })
-            // });
-            //
-            // console.log('dryResult ', dryResult)
-            
-            const digest = await executeTransaction(tx);
+        tx.setGasBudget(100000000);
 
-            if (!digest) throw new Error("No digest tx");
+        // const dryResult = await client.dryRunTransactionBlock({
+        //     transactionBlock: await tx.build({ client })
+        // });
+        //
+        // console.log('dryResult ', dryResult)
 
-            console.log("result tx digest ", digest);
-        } catch (error) {
-            console.log("error ", error);
-        }
+        const digest = await executeTransaction(tx);
+
+        if (!digest) throw new Error("No digest tx");
+
+        console.log("result tx digest ", digest);
+
     };
 
     // Fetch user's coin objects
@@ -183,37 +176,34 @@ export const useTransaction = () => {
             joinersLimit: string,
             discordLink: string,
         ) {
-            try {
-                const coins = await getUserCoins();
 
-                if (coins.length === 1) {
-                   await splitCoinForHaveGas();
-                }
+            const coins = await getUserCoins();
 
-                const tx = new Transaction();
-
-                const [championshipCreateFee] = tx.splitCoins(tx.gas, [
-                    MIST_PER_SUI,
-                ]);
-                // Move Call
-                tx.moveCall({
-                    target: `${PACKAGE_ID}::championship::create`,
-                    arguments: [
-                        tx.pure.string(title),
-                        tx.pure.string(description),
-                        tx.pure.string(game),
-                        tx.pure.u64(teamSize),
-                        tx.pure.u64(Number(entryFee) * MIST_PER_SUI),
-                        tx.pure.u64(joinersLimit),
-                        tx.pure.string(discordLink),
-                        championshipCreateFee
-                    ],
-                });
-                await handleSignAndExecute(tx);
-            } catch (error) {
-                console.error(error);
-                alert("Error creating championship. See console.");
+            if (coins.length === 1) {
+                await splitCoinForHaveGas();
             }
+
+            const tx = new Transaction();
+
+            const [championshipCreateFee] = tx.splitCoins(tx.gas, [
+                MIST_PER_SUI,
+            ]);
+            // Move Call
+            tx.moveCall({
+                target: `${PACKAGE_ID}::championship::create`,
+                arguments: [
+                    tx.pure.string(title),
+                    tx.pure.string(description),
+                    tx.pure.string(game),
+                    tx.pure.u64(teamSize),
+                    tx.pure.u64(Number(entryFee) * MIST_PER_SUI),
+                    tx.pure.u64(joinersLimit),
+                    tx.pure.string(discordLink),
+                    championshipCreateFee
+                ],
+            });
+            await handleSignAndExecute(tx);
+
         },
     };
 };

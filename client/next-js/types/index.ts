@@ -9,7 +9,12 @@ export interface Championship {
   entryFee: number;
   game: string;
   id: string;
-  participants: any[]; // Replace 'any[]' with a more specific type if needed
+  participants: {
+    address: string;
+    coinAmount: number;
+    joinTime: number;
+    nickname: string;
+  }[];
   rewardPool: {
     value: number;
   };

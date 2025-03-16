@@ -14,7 +14,8 @@ import {Championship} from "@/types";
 import {Championship as ChampionshipContent} from "@/components/championship";
 import {JoinChampionship} from "@/components/join-championship";
 import {CoinIcon} from "@/components/icons";
-import {convertMistToSui} from "@/utiltiies";
+import {convertMistToSui, mapChampionshipGraphQL, MoveChampionshipGraphQL} from "@/utiltiies";
+import {useRouter} from "next/navigation";
 
 const gqlClient = new SuiGraphQLClient({
     url: "https://sui-devnet.mystenlabs.com/graphql",
@@ -23,9 +24,9 @@ const gqlClient = new SuiGraphQLClient({
 const objectType = `${PACKAGE_ID}::championship::Championship`;
 
 
-async function getChampionships(after: string) {
+async function getChampionships(game: string, after: string) {
     const chainIdentifierQuery = graphql(`
-	query {
+	query () {
       objects(first: 10, filter: {type: "${objectType}"}) {
         pageInfo {
           hasNextPage
@@ -44,6 +45,7 @@ async function getChampionships(after: string) {
 
     const result = await gqlClient.query({
         query: chainIdentifierQuery,
+        variables: {after: null}
     });
 
     return result.data;
@@ -53,25 +55,14 @@ async function getChampionships(after: string) {
 
 // EXAMPLE: Connect to Sui testnet
 
-interface MoveChampionship {
-    description: string;
-    entry_fee: string;
+
+interface ChampionshipsProps {
     game: string;
-    id: string;
-    participants: string[]; // Replace 'any[]' with a more specific type if needed
-    reward_pool: {
-        value: string;
-    };
-    status: number;
-    team_size: string;
-    discord_link: string;
-    participants_limit: number;
-    title: string;
-    admin: string;
 }
 
-export default function Championships() {
+export default function Championships({ game }: ChampionshipsProps) {
     const {address} = useZKLogin();
+    const router = useRouter();
     const {joinChampionship, finishChampionship} = useTransaction();
     const [currentPage, setCurrentPage] = React.useState(1);
     const [pagination, setPagination] = useState({
@@ -80,38 +71,11 @@ export default function Championships() {
         hasPreviousPage: false,
         endCursor: '',
     });
+
     const [championShips, setChampionShips] = useState<Championship[]>([]);
-    const [detailedModalVisible, setDetailedModalVisible] = useState(false);
-
-    const [selectedChampionship, setSelectedChampionship] =
-        useState<Championship | null>(null);
-
-    const mapChampionship = (item: MoveChampionship): Championship => {
-        const {
-            entry_fee,
-            reward_pool,
-            discord_link,
-            participants_limit,
-            team_size,
-            status,
-            ...props
-        } = item;
-
-        return {
-            entryFee: Number(entry_fee),
-            rewardPool: {
-                value: Number(reward_pool?.value),
-            },
-            status: Number(status),
-            teamSize: Number(team_size),
-            participantsLimit: Number(participants_limit),
-            discordLink: discord_link,
-            ...props,
-        };
-    };
 
     const fetchList = async (endCursor = '') => {
-        const response = await getChampionships(endCursor)
+        const response = await getChampionships(game, endCursor)
 
         // if (response?.objects?.pageInfo) {
         //     setPagination((pag) => ({
@@ -122,8 +86,8 @@ export default function Championships() {
         // }
         if (response?.objects?.nodes) {
             return response?.objects?.nodes?.map(
-                (object): MoveChampionship =>
-                    object?.asMoveObject?.contents?.json as MoveChampionship,
+                (object): MoveChampionshipGraphQL =>
+                    object?.asMoveObject?.contents?.json as MoveChampionshipGraphQL,
             );
         }
         return [];
@@ -135,8 +99,7 @@ export default function Championships() {
             const items = await fetchList();
             setChampionShips(
                 items
-                    .filter(({status}) => status === 0 || status === 1)
-                    .map(mapChampionship),
+                    .map(mapChampionshipGraphQL),
             )
         }
 
@@ -153,78 +116,68 @@ export default function Championships() {
         setChampionShips((list) => [
             ...list,
             ...nextItems.filter(({status}) => status === 0 || status === 1)
-                .map(mapChampionship)
+                .map(mapChampionshipGraphQL)
         ]);
     }
 
-
-
-    console.log('pagination ', pagination)
     return (
         <div className="flex flex-col gap-8 items-center justify-center">
-           <div className="flex flex-wrap gap-8 items-center justify-center">
-               {championShips.map((championship) => {
+            <div className="flex flex-wrap gap-8 items-center justify-center">
+                <h1>{game}</h1>
+                {championShips.map((championship) => {
 
-                   return (
-                       <Card
-                           key={championship.id}
-                           isFooterBlurred
-                           className="border-none p-2"
-                           radius="lg"
-                           style={{minWidth: 200, maxWidth: 200}}
-                           isPressable
-                           onPress={() => {
-                               setSelectedChampionship(championship);
-                               setDetailedModalVisible(true);
-                           }}
-                       >
-                           <Image
-                               alt="Woman listing to music"
-                               className="object-cover mt-10"
-                               height={200}
-                               src="/logo_LoL.png"
-                               width={200}
-                           />
-                           <CardHeader className="absolute z-10 top-1 flex-col !items-start">
-                               <p className="text-tiny text-white/60 uppercase font-bold">
-                                   {championship.teamSize}X{championship.teamSize}
-                               </p>
-                               <h4 className="text-white font-medium text-large self-center">
-                                   {championship.title}
-                               </h4>
-                           </CardHeader>
-                           <CardFooter className="flex justify-between ">
+                    return (
+                        <Card
+                            key={championship.id}
+                            isFooterBlurred
+                            className="border-none p-2"
+                            radius="lg"
+                            style={{minWidth: 200, maxWidth: 200}}
+                            isPressable
+                            onPress={() => {
+                                router.push(`/championships/${championship.id}`)
+                            }}
+                        >
+                            <Image
+                                alt="Woman listing to music"
+                                className="object-cover mt-10"
+                                height={200}
+                                src="/logo_LoL.png"
+                                width={200}
+                            />
+                            <CardHeader className="absolute z-10 top-1 flex-col !items-start">
+                                <p className="text-tiny text-white/60 uppercase font-bold">
+                                    {championship.teamSize}X{championship.teamSize}
+                                </p>
+                                <h4 className="text-white font-medium text-large self-center">
+                                    {championship.title}
+                                </h4>
+                            </CardHeader>
+                            <CardFooter className="flex justify-between ">
 
-                               <Button
-                                   className="text-tiny text-white bg-black/20"
-                                   color="default"
-                                   radius="lg"
-                                   size="sm"
-                                   variant="flat"
-                               >
-                                   Prize:
-                                   <CoinIcon className="text-danger" />
-                                   {convertMistToSui(championship?.rewardPool?.value)}
-                               </Button>
-                           </CardFooter>
-                       </Card>
-                   );
-               })}
-           </div>
+                                <Button
+                                    className="text-tiny text-white bg-black/20"
+                                    color="default"
+                                    radius="lg"
+                                    size="sm"
+                                    variant="flat"
+                                >
+                                    Prize:
+                                    <CoinIcon className="text-danger"/>
+                                    {convertMistToSui(championship?.rewardPool?.value)}
+                                </Button>
+                            </CardFooter>
+                        </Card>
+                    );
+                })}
+            </div>
 
-            <Button disabled={!pagination.hasNextPage} size="lg" onPress={loadMoreHandle}>Load More</Button>
+            {
+                championShips.length
+                    ? <Button disabled={!pagination.hasNextPage} size="lg" onPress={loadMoreHandle}>Load More</Button>
+                    : null
+            }
 
-            {/*Detailed*/}
-            <Modal
-                actions={[]}
-                open={detailedModalVisible}
-                title={selectedChampionship?.title || ""}
-                onChange={setDetailedModalVisible}
-            >
-                {selectedChampionship ? (
-                    <ChampionshipContent data={selectedChampionship}/>
-                ) : null}
-            </Modal>
 
         </div>
     );

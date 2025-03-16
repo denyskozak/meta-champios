@@ -41,8 +41,7 @@ export const Navbar = () => {
     const {logout, address, client} = useZKLogin();
     const router = useRouter();
     const [coinCount, setCoinCount] = useState(0);
-    const [newChampionshipModalVisible, setNewChampionshipModalVisible] =
-        useState(false);
+
 
     async function getUserCoins() {
         const coins = await client.getCoins({
@@ -161,13 +160,12 @@ export const Navbar = () => {
                                 onPress={() => {
                                     if (!address) {
                                         router.push("/login");
-
                                         return;
                                     }
-                                    setNewChampionshipModalVisible(true);
+                                    router.push("/championships/create");
                                 }}
                             >
-                                New Championsip
+                                New Championship
                             </Button>
                             <Button
                                 className="text-sm font-normal text-default-600 bg-default-100"
@@ -219,22 +217,7 @@ export const Navbar = () => {
                     ))}
                 </div>
             </NavbarMenu>
-            <Modal
-                actions={[]}
-                open={newChampionshipModalVisible}
-                size="sm"
-                title="New Championship"
-                onChange={setNewChampionshipModalVisible}
-            >
-                <CreateChampionship
-                    onSuccess={
-                        () => {
-                            setNewChampionshipModalVisible(false);
-                            window.dispatchEvent(new Event('update-championships'));
-                        }
-                    }
-                />
-            </Modal>
+
         </HeroUINavbar>
     );
 };
