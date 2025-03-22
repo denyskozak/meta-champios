@@ -1,6 +1,14 @@
+<div align="center">
+
+## ✨ [**Link to Project**](https://meta-wars.vercel.app/) ✨
+
+</div>
+
 # MetaChampions – Play Beyond
 
 **MetaChampions** is a next-generation gaming platform built on [Sui](https://sui.io/) to host and manage competitive championships for any online game. Our sleek, futuristic landing page (inspired by the screenshot below) captures the essence of what MetaChampions is all about—**epic esports**, **seamless onboarding**, and a **community-driven ecosystem** where skill meets blockchain technology.
+
+
 
 > **Screenshot Preview**  
 > <br>

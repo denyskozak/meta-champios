@@ -2,9 +2,8 @@ module meta_wars::championship {
     use std::string::String;
     use sui::balance;
     use sui::coin;
-    use sui::object::id;
     use sui::sui::{SUI};
-    use sui::url::Url;
+
     const MIST_PER_SUI: u64 = 1_000_000_000;
 
     /// Error codes
@@ -111,6 +110,7 @@ module meta_wars::championship {
             coin_amount: paymentAmount,
             address: ctx.sender()
         };
+
         vector::push_back(&mut championship.participants, participant);
     }
 
@@ -136,6 +136,7 @@ module meta_wars::championship {
             coin_amount: 0,
             address: ctx.sender()
         };
+
         vector::push_back(&mut championship.participants, participant);
     }
 
@@ -149,7 +150,10 @@ module meta_wars::championship {
     public fun change_status(
         championship: &mut Championship,
         status: u8,
+        ctx: &mut TxContext
     ) {
+        assert!(championship.admin == ctx.sender(), YouAreNotAdmin);
+
         championship.status = status;
     }
 
@@ -162,7 +166,7 @@ module meta_wars::championship {
         ctx: &mut TxContext
     ) {
         // Only the admin can finish the championship
-        assert!(tx_context::sender(ctx) == championship.admin, NotAdminError);
+        assert!(championship.admin == ctx.sender(), YouAreNotAdmin);
 
         // Championship must be ongoing (status = 1)
         assert!(championship.status == 1, ChampionshipNotOngoingError);
@@ -177,8 +181,8 @@ module meta_wars::championship {
 
         // Distribute rewards equally
         let reward_per_winner = total_rewards / winner_count;
-        let mut i = 0;
 
+        let mut i = 0;
         while (i < winner_count) {
             let winner_addr = winner_addresses[i];
             // Turn part of the Balance<SUI> into a coin

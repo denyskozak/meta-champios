@@ -70,8 +70,7 @@ export default function General() {
   return (
     <div
       ref={container}
-      className="w-screen  h-screen"
-      style={{ overflow: "scroll", padding: "1rem", fontFamily: "sans-serif" }}
+      className="w-full  h-full"
     >
       {/* HeroUI-like header */}
       <header style={{ textAlign: "center", marginBottom: "2rem" }}>
