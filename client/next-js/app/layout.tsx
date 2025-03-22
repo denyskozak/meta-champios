@@ -41,11 +41,23 @@ export default function RootLayout({
         )}
       >
         <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <div className="relative flex flex-col h-screen w-screen">
-            <Navbar />
-            <main className="w-screen h-screen flex justify-center">
-              {children}
-            </main>
+          <Navbar/>
+          <div className="relative justify-center flex flex-col h-screen w-screen">
+            <video
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="blur-sm absolute top-0 left-0 w-full h-full object-cover z-[0]"
+            >
+              <source src="/bg.mp4" type="video/mp4"/>
+              Your browser does not support the video tag.
+            </video>
+
+             <main className="z-[1] flex justify-center">
+               {children}
+             </main>
+
             {/*<footer className="w-full flex items-center justify-center py-3">*/}
             {/*  <Link*/}
             {/*    isExternal*/}
@@ -59,7 +71,7 @@ export default function RootLayout({
             {/*</footer>*/}
           </div>
         </Providers>
-        <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/TextPlugin.min.js" />
+        <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/TextPlugin.min.js"/>
       </body>
     </html>
   );

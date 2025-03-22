@@ -4,20 +4,10 @@ import General from "@/components/general";
 
 export default function Home() {
   return (
-      <section className="flex flex-col items-center justify-center">
-         <div className="z-[2]">
+      <section className="">
              <General/>
-         </div>
-          <video
-              autoPlay
-              muted
-              loop
-              playsInline
-              className="absolute top-0 left-0 w-full h-full object-cover z-[1]"
-          >
-              <source src="/bg.mp4" type="video/mp4"/>
-              Your browser does not support the video tag.
-          </video>
+
+
           {/*<div className="flex gap-3">*/}
           {/*    <Link*/}
           {/*        isExternal*/}

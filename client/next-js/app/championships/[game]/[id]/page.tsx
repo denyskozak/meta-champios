@@ -46,7 +46,7 @@ export default function ChampionshipPage({
   return (
     <div>
       <div className="fade-in-animation">
-        {championship && <ChampionshipContent data={championship} />}
+        {championship && <ChampionshipContent data={championship} onRefresh={refetch} />}
       </div>
     </div>
   );

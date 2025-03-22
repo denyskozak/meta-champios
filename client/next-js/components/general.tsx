@@ -76,20 +76,20 @@ export default function General() {
       <header style={{ textAlign: "center", marginBottom: "2rem" }}>
         <div className="inline-block max-w-xl text-center justify-center items-center">
           <div>
-            <span className={`${getTitle()} fade-in-animation`}>Play</span>
-            &nbsp;
+            <span className={`${getTitle()} fade-in-animation`}>PLAY&nbsp;</span>
+
             <span
               className={`${getTitle({ color: "violet" })} fade-in-animation`}
             >
-              Win
+              WIN&nbsp;
             </span>
-            &nbsp;
-            <span className={`${getTitle()} fade-in-animation`}>Earn</span>
-            &nbsp;
-            <br />
-            <span className={`${getTitle()} fade-in-animation`}>
-              with&nbsp;
-            </span>
+
+            <span className={`${getTitle()} fade-in-animation`}>EARN</span>
+
+            {/*<br />*/}
+            {/*<span className={`${getTitle()} fade-in-animation`}>*/}
+            {/*  with&nbsp;*/}
+            {/*</span>*/}
           </div>
           <div>
             <Image
@@ -120,7 +120,8 @@ export default function General() {
         {/*<div>*/}
         {/*    <span className={`${getTitle()} fade-in-animation`}>Championships&nbsp;</span>*/}
         {/*</div>*/}
-        <Button>
+
+        <Button className="bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg">
           <Link href="/championships">Explore Championships</Link>
         </Button>
       </section>
