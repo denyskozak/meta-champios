@@ -18,7 +18,7 @@ import NextLink from "next/link";
 import clsx from "clsx";
 import { useZKLogin } from "react-sui-zk-login-kit";
 import { useRouter } from "next/navigation";
-import React, { useLayoutEffect, useState } from "react";
+import React, {useEffect, useLayoutEffect, useState} from "react";
 import Image from "next/image";
 
 import { siteConfig } from "@/config/site";
@@ -30,41 +30,30 @@ import {
   CoinIcon,
 } from "@/components/icons";
 import { convertMistToSui } from "@/utiltiies";
+import {useSuiClientQuery} from "@mysten/dapp-kit";
 
 export const Navbar = () => {
   const { logout, address, client } = useZKLogin();
   const router = useRouter();
-  const [coinCount, setCoinCount] = useState('0');
 
-  async function getUserCoins() {
-    const coins = await client.getCoins({
-      owner: address || "",
-      coinType: "0x2::sui::SUI",
-    });
 
-    console.log("Request $MW coins ", coins.data);
 
-    return coins.data;
-  }
 
-  const requestCoins = () => {
-    getUserCoins()
-      .then((data) => {
-        setCoinCount(
-          convertMistToSui(
-            data.reduce((sum, coin) => sum + Number(coin.balance), 0),
-          ),
-        );
-      })
-      .catch(() => console.log("Error getting coins:"));
-  };
 
-  useLayoutEffect(() => {
-    if (address) {
-      requestCoins();
-    }
-  }, [address]);
+  const { data, refetch } = useSuiClientQuery(
+      'getBalance',
+      { owner: address || '' },
+      {
+        gcTime: 10000,
+      },
+  );
 
+    useEffect(() => {
+        const intervalId = setInterval(() => refetch(), 2000);
+        return () => { clearInterval(intervalId); };
+    }, []);
+
+  console.log('data ', data)
   const searchInput = (
     <Input
       aria-label="Search"
@@ -159,7 +148,7 @@ export const Navbar = () => {
                 variant="flat"
               >
                 <CoinIcon className="text-danger" />
-                {` ${coinCount}`}
+                {` ${convertMistToSui(data?.totalBalance || '0')}`}
               </Button>
 
               <Button
