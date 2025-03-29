@@ -27,6 +27,7 @@ export const JoinChampionship = ({
             onSubmit={async (e) => {
                 e.preventDefault();
                 const formData = new FormData(e.currentTarget);
+                const teamName = formData.get("teamName") as string;
                 const leadNickname = formData.get("leadNickname") as string;
 
                 const teammateNicknames: string[] = teammateFields.map((i) =>
@@ -44,7 +45,7 @@ export const JoinChampionship = ({
                 }
 
                 try {
-                    await joinChampionship(championship, leadNickname, teammateNicknames);
+                    await joinChampionship(championship, teamName, leadNickname, teammateNicknames);
                     addToast({
                         title: `You have joined ${championship.title}`,
                         color: "primary",
@@ -63,8 +64,17 @@ export const JoinChampionship = ({
         >
             <Input
                 isRequired
+                errorMessage="Please enter a team name"
+                label="Team Name"
+                labelPlacement="outside"
+                name="teamName"
+                placeholder="Enter Team Name"
+                type="text"
+            />
+            <Input
+                isRequired
                 errorMessage="Please enter a valid nickname"
-                label="Your nickname"
+                label="Leader nickname"
                 labelPlacement="outside"
                 name="leadNickname"
                 placeholder="Enter leader nickname"

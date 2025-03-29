@@ -38,7 +38,7 @@ export default function ChampionshipPage({
       setChampionship(mapChampionshipRPC(fields as any));
     }
   }, [data]);
-  console.log("data ", data);
+  console.log("data ", championship);
 
 
   return (

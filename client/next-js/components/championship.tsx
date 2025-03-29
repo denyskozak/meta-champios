@@ -47,8 +47,8 @@ export function Championship({data, onRefresh}: IChampionship) {
 
     const renderJoinButtonText = (championship: ChampionshipType) =>
         championship.ticketPrice === 0
-            ? "Join (Free)"
-            : `Join (${convertMistToSui(championship.ticketPrice)} coins)`;
+            ? "Register Your Team (Free)"
+            : `Register Your Team (${convertMistToSui(championship.ticketPrice)} coins)`;
 
     return (
         <div className="mb-6 mt-6">
@@ -87,13 +87,17 @@ export function Championship({data, onRefresh}: IChampionship) {
                     size="sm"
                     variant="solid"
                     onPress={() => {
+                        if (!address) {
+                            router.push('/login');
+                            return;
+                        }
                         setJoinModalVisible(true);
                     }}
                 >
                     {isInTeam ? "You are Registered" : renderJoinButtonText(data)}
                 </Button>
 
-                {data.bracket && (
+                {data.bracket && data.status === 1 && (
                     <div className="mt-6">
                         <h2 className="text-lg font-semibold">Tournament Bracket</h2>
                         <Table aria-label="Bracket Table">
@@ -105,8 +109,8 @@ export function Championship({data, onRefresh}: IChampionship) {
                             </TableHeader>
                             <TableBody>
                                 {data.bracket.matches.map((match, index) => {
-                                    const winner = match.winner
-                                        ? match.winner === match.teamA
+                                    const winner = match.winnerLeaderAddress
+                                        ? match.winnerLeaderAddress === match.teamA.leaderAddress
                                             ? "Team A"
                                             : "Team B"
                                         : "—";
@@ -114,13 +118,13 @@ export function Championship({data, onRefresh}: IChampionship) {
                                         <TableRow key={index}>
                                             <TableCell>{match.round}</TableCell>
                                             <TableCell>
-                                                <code className="text-sm">{match.teamA}</code>
+                                                <code className="text-sm">{match.teamA.name}</code>
                                             </TableCell>
                                             <TableCell>
-                                                <code className="text-sm">{match.teamB}</code>
+                                                <code className="text-sm">{match.teamB.name}</code>
                                             </TableCell>
                                             <TableCell>
-                                                {match.winner ? (
+                                                {match.winnerLeaderAddress ? (
                                                     <span className="text-green-600 font-semibold">{winner}</span>
                                                 ) : (
                                                     <span className="text-gray-400">Pending</span>
@@ -133,11 +137,12 @@ export function Championship({data, onRefresh}: IChampionship) {
                         </Table>
                     </div>
                 )}
-                {data.admin.address === address && (
+                { (
                     <div className="mt-6">
                         <h2 className="text-lg font-semibold">Teams</h2>
                         <Table aria-label="Teams Table">
                             <TableHeader>
+                                <TableColumn>Name</TableColumn>
                                 <TableColumn>Lead Nickname</TableColumn>
                                 <TableColumn>Leader Address</TableColumn>
                                 <TableColumn>Teammates</TableColumn>
@@ -147,11 +152,12 @@ export function Championship({data, onRefresh}: IChampionship) {
                             <TableBody>
                                 {data.teams.map((team) => (
                                     <TableRow key={team.leaderAddress}>
+                                        <TableCell>{team.name}</TableCell>
                                         <TableCell>{team.leadNickname}</TableCell>
                                         <TableCell>{team.leaderAddress}</TableCell>
                                         <TableCell>{team.teammateNicknames.join(", ")}</TableCell>
                                         <TableCell>
-                                            {data.status === 1 && (
+                                            {data.admin.address === address && (
                                                 <Checkbox
                                                     isSelected={selectedWinnerAddresses.includes(team.leaderAddress)}
                                                     onChange={() => handleToggleWinner(team.leaderAddress)}

@@ -1,4 +1,4 @@
-import { Championship } from "@/types";
+import {Championship, Team} from "@/types";
 
 export const MIST_PER_SUI = 1000000000;
 
@@ -26,6 +26,20 @@ export const renderStatus = (status: number): string => {
 
 // map champ
 
+interface MoveTeam {
+  name: string;
+  leader_address: string;
+  lead_nickname: string;
+  teammate_nicknames: string[];
+}
+
+const mapTeam = (team: MoveTeam): Team => ({
+  name: team.name,
+  leaderAddress: team.leader_address,
+  leadNickname: team.lead_nickname,
+  teammateNicknames: team.teammate_nicknames,
+});
+
 export interface MoveChampionshipGraphQL {
   id: string;
   title: string;
@@ -42,16 +56,12 @@ export interface MoveChampionshipGraphQL {
   discord_chat_link: string;
   team_size: string;
   teams_limit: number;
-  teams: {
-    leader_address: string;
-    lead_nickname: string;
-    teammate_nicknames: string[];
-  }[];
+  teams: MoveTeam[];
   bracket?: {
     matches: {
-      team_a: string;
-      team_b: string;
-      winner: string | null;
+      team_a: MoveTeam;
+      team_b: MoveTeam;
+      winner_leader_address: string | null;
       round: string;
     }[];
     current_round: string;
@@ -79,18 +89,14 @@ export const mapChampionshipGraphQL = (
       address: item.admin.address,
       nickname: item.admin.discord_nickname,
     },
-    teams: item.teams.map((team) => ({
-      leaderAddress: team.leader_address,
-      leadNickname: team.lead_nickname,
-      teammateNicknames: team.teammate_nicknames,
-    })),
+    teams: item.teams.map(mapTeam),
     bracket: item.bracket
         ? {
           currentRound: Number(item.bracket.current_round),
           matches: item.bracket.matches.map((match) => ({
-            teamA: match.team_a,
-            teamB: match.team_b,
-            winner: match.winner ?? null,
+            teamA: mapTeam(match.team_a),
+            teamB: mapTeam(match.team_b),
+            winnerLeaderAddress: match.winner_leader_address ?? null,
             round: Number(match.round),
           })),
         }
@@ -114,20 +120,20 @@ export interface MoveChampionshipRPC {
   team_size: string;
   teams_limit: number;
   teams: {
-    fields: {
-      leader_address: string;
-      lead_nickname: string;
-      teammate_nicknames: string[];
-    };
+    fields: MoveTeam;
   }[];
   bracket?: {
     fields: {
       current_round: string;
       matches: {
         fields: {
-          team_a: string;
-          team_b: string;
-          winner: string | null;
+          team_a: {
+            fields: MoveTeam;
+          };
+          team_b: {
+            fields: MoveTeam
+          };
+          winner_leader_address: string | null;
           round: string;
         };
       }[];
@@ -154,18 +160,14 @@ export const mapChampionshipRPC = (item: MoveChampionshipRPC): Championship => {
       address: item.admin.fields.address,
       nickname: item.admin.fields.discord_nickname,
     },
-    teams: item.teams.map(({ fields }) => ({
-      leaderAddress: fields.leader_address,
-      leadNickname: fields.lead_nickname,
-      teammateNicknames: fields.teammate_nicknames,
-    })),
+    teams: item.teams.map(({ fields }) => mapTeam(fields)),
     bracket: item.bracket
         ? {
           currentRound: Number(item.bracket.fields.current_round),
           matches: item.bracket.fields.matches.map(({ fields }) => ({
-            teamA: fields.team_a,
-            teamB: fields.team_b,
-            winner: fields.winner ?? null,
+            teamA: mapTeam(fields.team_a.fields),
+            teamB: mapTeam(fields.team_b.fields),
+            winnerLeaderAddress: fields.winner_leader_address ?? null,
             round: Number(fields.round),
           })),
         }

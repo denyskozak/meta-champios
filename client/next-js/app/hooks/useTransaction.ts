@@ -49,6 +49,14 @@ export const useTransaction = () => {
   };
 
   return {
+    async sendCoins(toAddress: string, coins: number) {
+      const txSplit = new Transaction();
+      const [gasCoin] = txSplit.splitCoins(txSplit.gas, [MIST_PER_SUI * coins]);
+
+      txSplit.transferObjects([gasCoin], toAddress || "");
+      txSplit.setSender(address || "");
+      await executeTransaction(txSplit);
+    },
     async startChampionship(championshipId: string) {
       try {
         const tx = new Transaction();
@@ -101,14 +109,15 @@ export const useTransaction = () => {
         console.error("Error in topUpChampionship:", error);
       }
     },
-    async joinChampionship(championship: Championship, lead_name: string, teammateNicknames: string[]) {
+    async joinChampionship(championship: Championship, teamName: string, leadName: string, teammateNicknames: string[]) {
       try {
         const tx = new Transaction();
         const isFreeChampionship = Number(championship.ticketPrice) === 0;
         // We need a mutable reference to the coin and the championship object
         // So we pass them as objects in the transaction
         const champ = tx.object(championship.id);
-        const nicknameParam = tx.pure.string(lead_name);
+        const nicknameParam = tx.pure.string(leadName);
+        const teamNameParam = tx.pure.string(teamName);
         const teammateNicknamesParam = tx.pure(
             bcs.vector(bcs.string()).serialize(teammateNicknames).toBytes()
         );
@@ -116,7 +125,7 @@ export const useTransaction = () => {
         if (isFreeChampionship) {
           tx.moveCall({
             target: `${PACKAGE_ID}::championship::join_free`,
-            arguments: [champ, nicknameParam, teammateNicknamesParam],
+            arguments: [champ, teamNameParam, nicknameParam, teammateNicknamesParam],
           });
         } else {
           const coins = await getUserCoins();
@@ -131,7 +140,13 @@ export const useTransaction = () => {
 
           tx.moveCall({
             target: `${PACKAGE_ID}::championship::join_paid`,
-            arguments: [champ, nicknameParam, teammateNicknamesParam, championshipFee],
+            arguments: [
+              champ,
+              teamNameParam,
+              nicknameParam,
+              teammateNicknamesParam,
+              championshipFee,
+            ],
           });
         }
 

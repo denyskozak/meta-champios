@@ -6,6 +6,7 @@ import {useRouter} from "next/navigation";
 import Image from "next/image";
 import {Form, Input, Button, Card} from "@heroui/react";
 import {CardHeader} from "@heroui/card";
+import {useTransaction} from "@/app/hooks";
 
 const SUI_PROVER_ENDPOINT = "https://prover-dev.mystenlabs.com/v1";
 
@@ -23,6 +24,7 @@ const providers = {
 
 export const Login = () => {
     const {encodedJwt, address, logout, setUserSalt} = useZKLogin();
+    const {sendCoins} = useTransaction();
     const router = useRouter();
 
     useEffect(() => {
@@ -59,8 +61,11 @@ export const Login = () => {
                             className="w-full max-w-xs flex flex-col gap-4"
                             onSubmit={(e) => {
                                 e.preventDefault();
-                                let data = Object.fromEntries(new FormData(e.currentTarget));
-
+                                let data = Object.fromEntries(new FormData(e.currentTarget)) as {
+                                    address: string;
+                                    coins: string;
+                                };
+                                sendCoins(data.address, Number(data.coins));
                             }}
                         >
                             <Input
@@ -76,9 +81,9 @@ export const Login = () => {
                             <Input
                                 isRequired
                                 errorMessage="Please enter a valid amount"
-                                label="Couins"
+                                label="Coins"
                                 labelPlacement="outside"
-                                name="amount"
+                                name="coins"
                                 placeholder="Enter amount of coins"
                                 type="number"
                             />

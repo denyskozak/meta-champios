@@ -1,5 +1,4 @@
 module meta_wars::championship {
-    use std::option;
     use std::string::String;
     use sui::balance;
     use sui::coin;
@@ -23,23 +22,24 @@ module meta_wars::championship {
 
     const FounderAddress: address = @0xe683e99499e137aaa545de0ba866784f7d7ee63fb2227a4c894cdf64d784b386;
 
+    public struct Team has drop, copy, store {
+        name: String,
+        leader_address: address,
+        lead_nickname: String,
+        teammate_nicknames: vector<String>,
+    }
+
     /// Одна игра в сетке турнира
     public struct Match has drop, store {
-        team_a: address,
-        team_b: address,
-        winner: option::Option<address>,
+        team_a: Team,
+        team_b: Team,
+        winner_leader_address: option::Option<address>,
         round: u64,
     }
 
     public struct Bracket has drop, store {
         matches: vector<Match>,
         current_round: u64,
-    }
-
-    public struct Team has drop, store {
-        leader_address: address,
-        lead_nickname: String,
-        teammate_nicknames: vector<String>,
     }
 
     public struct Admin has store {
@@ -119,6 +119,7 @@ module meta_wars::championship {
    // Open functions
     public fun join_paid(
         championship: &mut Championship,
+        team_name: String,
         lead_nickname: String,
         teammate_nicknames: vector<String>,
         payment: coin::Coin<SUI>,
@@ -134,6 +135,7 @@ module meta_wars::championship {
         assert!(vector::length(&teammate_nicknames) == championship.team_size - 1, ChampionshipLimitAmmountdError);
 
         let team = Team {
+            name: team_name,
             leader_address: ctx.sender(),
             lead_nickname,
             teammate_nicknames
@@ -145,6 +147,7 @@ module meta_wars::championship {
 
     public fun join_free(
         championship: &mut Championship,
+        team_name: String,
         lead_nickname: String,
         teammate_nicknames: vector<String>,
         ctx: &mut TxContext
@@ -156,6 +159,8 @@ module meta_wars::championship {
         assert!(vector::length(&teammate_nicknames) == championship.team_size - 1, ChampionshipLimitAmmountdError);
 
         let team = Team {
+            name: team_name,
+
             leader_address: ctx.sender(),
             lead_nickname,
             teammate_nicknames
@@ -202,18 +207,18 @@ module meta_wars::championship {
         let mut i = 0;
 
         while (i < team_count) {
-            let team_a = championship.teams[i].leader_address;
+            let team_a = championship.teams[i];
             let team_b = if (i + 1 < team_count) {
-                championship.teams[i + 1].leader_address
+                championship.teams[i + 1]
             } else {
                 // win without fight
-                championship.teams[i].leader_address
+                championship.teams[i]
             };
 
             let game = Match {
                 team_a,
                 team_b,
-                winner: option::none<address>(),
+                winner_leader_address: option::none<address>(),
                 round: 1
             };
             vector::push_back(&mut matches, game);
@@ -231,13 +236,13 @@ module meta_wars::championship {
     public fun report_match_result(
         championship: &mut Championship,
         match_index: u64,
-        winner: address,
+        winner_leader_address: address,
         ctx: &mut TxContext
     ) {
         assert!(championship.admin.address == ctx.sender(), YouAreNotAdmin);
         let bracket = &mut championship.bracket;
         let match_ref = &mut bracket.matches[match_index];
-        option::fill(&mut match_ref.winner, winner);
+        option::fill(&mut match_ref.winner_leader_address, winner_leader_address);
     }
 
 
@@ -245,29 +250,40 @@ module meta_wars::championship {
         let bracket = &mut championship.bracket;
         let current_matches = &mut bracket.matches;
         let mut next_round = vector::empty<Match>();
-        let mut winners = vector::empty<address>();
+        let mut winner_teams = vector::empty<Team>();
 
         let mut i = 0;
         while (i < vector::length(current_matches)) {
             let m = &mut current_matches[i];
-            let winner = option::extract(&mut m.winner);
-            vector::push_back(&mut winners, winner);
+            let winner_leader_address = option::extract(&mut m.winner_leader_address);
+
+            // looking for winner team
+            let mut team_i = 0;
+            while (team_i < vector::length(&championship.teams)) {
+                if (championship.teams[team_i].leader_address == winner_leader_address) {
+                    vector::push_back(&mut winner_teams, championship.teams[team_i]);
+                    break;
+                };
+
+                team_i = team_i + 1;
+            };
+
             i = i + 1;
         };
 
         let mut j = 0;
-        let len = vector::length(&winners);
+        let len = vector::length(&winner_teams);
         while (j < len) {
-            let a = winners[j];
+            let a = winner_teams[j];
             let b = if (j+1 < len) {
-                winners[j+1]
+                winner_teams[j+1]
             } else {
                 a // win without fight
             };
             vector::push_back(&mut next_round, Match {
                 team_a: a,
                 team_b: b,
-                winner: option::none<address>(),
+                winner_leader_address: option::none<address>(),
                 round: bracket.current_round + 1
             });
             j = j + 2;
