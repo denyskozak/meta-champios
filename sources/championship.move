@@ -1,4 +1,5 @@
 module meta_wars::championship {
+    use std::option;
     use std::string::String;
     use sui::balance;
     use sui::coin;
@@ -115,7 +116,83 @@ module meta_wars::championship {
         transfer::share_object(championship)
     }
 
+   // Open functions
+    public fun join_paid(
+        championship: &mut Championship,
+        lead_nickname: String,
+        teammate_nicknames: vector<String>,
+        payment: coin::Coin<SUI>,
+        ctx: &mut TxContext
+    ) {
+        assert!(championship.status == 0, ChampionshipClosedError);
+        assert!(vector::length(&championship.teams) < championship.teams_limit, ChampionshipCapFullError);
+        assert!(championship.ticket_price > 0, ChampionshipFreeError);
+        assert!(payment.value() == championship.ticket_price, UserHasNoEnoughtCoins);
 
+        coin::put(&mut championship.reward_pool, payment);
+
+        assert!(vector::length(&teammate_nicknames) == championship.team_size - 1, ChampionshipLimitAmmountdError);
+
+        let team = Team {
+            leader_address: ctx.sender(),
+            lead_nickname,
+            teammate_nicknames
+        };
+
+        vector::push_back(&mut championship.teams, team);
+    }
+
+
+    public fun join_free(
+        championship: &mut Championship,
+        lead_nickname: String,
+        teammate_nicknames: vector<String>,
+        ctx: &mut TxContext
+    ) {
+        assert!(championship.status == 0, ChampionshipClosedError);
+        assert!(vector::length(&championship.teams) < championship.teams_limit, ChampionshipCapFullError);
+        assert!(championship.ticket_price == 0, ChampionshipNoFreeError);
+
+        assert!(vector::length(&teammate_nicknames) == championship.team_size - 1, ChampionshipLimitAmmountdError);
+
+        let team = Team {
+            leader_address: ctx.sender(),
+            lead_nickname,
+            teammate_nicknames
+        };
+
+        vector::push_back(&mut championship.teams, team);
+    }
+
+    public fun finish(
+        championship: &mut Championship,
+        winner_addresses: vector<address>,
+        ctx: &mut TxContext
+    ) {
+        assert!(championship.admin.address == ctx.sender(), YouAreNotAdmin);
+        assert!(championship.status == 1, ChampionshipNotOngoingError);
+
+        let winner_count = vector::length(&winner_addresses);
+        assert!(winner_count > 0, NoWinnersError);
+
+        let total_rewards = championship.reward_pool.value();
+        assert!(total_rewards > 0, EmptyRewardPoolError);
+
+        let reward_per_winner = total_rewards / winner_count;
+
+        let mut i = 0;
+        while (i < winner_count) {
+            let winner_addr = winner_addresses[i];
+            let reward = championship.reward_pool.split(reward_per_winner);
+            let reward_coin = coin::from_balance(reward, ctx);
+            transfer::public_transfer(reward_coin, winner_addr);
+            i = i + 1;
+        };
+
+        championship.status = 2;
+    }
+
+    // On Going Functions
     public fun start_championship(championship: &mut Championship, ctx: &mut TxContext) {
         assert!(championship.admin.address == ctx.sender(), YouAreNotAdmin);
         assert!(championship.status == 0, ChampionshipOnGoing);
@@ -198,80 +275,5 @@ module meta_wars::championship {
 
         bracket.matches = next_round;
         bracket.current_round = bracket.current_round + 1;
-    }
-
-    public fun join_paid(
-        championship: &mut Championship,
-        lead_nickname: String,
-        teammate_nicknames: vector<String>,
-        payment: coin::Coin<SUI>,
-        ctx: &mut TxContext
-    ) {
-        assert!(championship.status == 0, ChampionshipClosedError);
-        assert!(vector::length(&championship.teams) < championship.teams_limit, ChampionshipCapFullError);
-        assert!(championship.ticket_price > 0, ChampionshipFreeError);
-        assert!(payment.value() == championship.ticket_price, UserHasNoEnoughtCoins);
-
-        coin::put(&mut championship.reward_pool, payment);
-
-        assert!(vector::length(&teammate_nicknames) == championship.team_size - 1, ChampionshipLimitAmmountdError);
-
-        let team = Team {
-            leader_address: ctx.sender(),
-            lead_nickname,
-            teammate_nicknames
-        };
-
-        vector::push_back(&mut championship.teams, team);
-    }
-
-
-    public fun join_free(
-        championship: &mut Championship,
-        lead_nickname: String,
-        teammate_nicknames: vector<String>,
-        ctx: &mut TxContext
-    ) {
-        assert!(championship.status == 0, ChampionshipClosedError);
-        assert!(vector::length(&championship.teams) < championship.teams_limit, ChampionshipCapFullError);
-        assert!(championship.ticket_price == 0, ChampionshipNoFreeError);
-
-        assert!(vector::length(&teammate_nicknames) == championship.team_size - 1, ChampionshipLimitAmmountdError);
-
-        let team = Team {
-            leader_address: ctx.sender(),
-            lead_nickname,
-            teammate_nicknames
-        };
-
-        vector::push_back(&mut championship.teams, team);
-    }
-
-    public fun finish(
-        championship: &mut Championship,
-        winner_addresses: vector<address>,
-        ctx: &mut TxContext
-    ) {
-        assert!(championship.admin.address == ctx.sender(), YouAreNotAdmin);
-        assert!(championship.status == 1, ChampionshipNotOngoingError);
-
-        let winner_count = vector::length(&winner_addresses);
-        assert!(winner_count > 0, NoWinnersError);
-
-        let total_rewards = championship.reward_pool.value();
-        assert!(total_rewards > 0, EmptyRewardPoolError);
-
-        let reward_per_winner = total_rewards / winner_count;
-
-        let mut i = 0;
-        while (i < winner_count) {
-            let winner_addr = winner_addresses[i];
-            let reward = championship.reward_pool.split(reward_per_winner);
-            let reward_coin = coin::from_balance(reward, ctx);
-            transfer::public_transfer(reward_coin, winner_addr);
-            i = i + 1;
-        };
-
-        championship.status = 2;
     }
 }

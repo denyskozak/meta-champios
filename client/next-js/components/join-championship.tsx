@@ -1,11 +1,11 @@
-import {Form} from "@heroui/form";
-import {Input} from "@heroui/input";
-import {Button} from "@heroui/button";
-import {addToast} from "@heroui/react";
+import { Form } from "@heroui/form";
+import { Input } from "@heroui/input";
+import { Button } from "@heroui/button";
+import { addToast } from "@heroui/react";
 
-import {useTransaction} from "@/app/hooks";
-import {Championship} from "@/types";
-import {convertMistToSui} from "@/utiltiies";
+import { useTransaction } from "@/app/hooks";
+import { Championship } from "@/types";
+import { convertMistToSui } from "@/utiltiies";
 
 export const JoinChampionship = ({
                                      championship,
@@ -14,40 +14,82 @@ export const JoinChampionship = ({
     championship: Championship;
     onJoin: () => void;
 }) => {
-    const {joinChampionship} = useTransaction();
+    const { joinChampionship } = useTransaction();
+
+    const teammateFields = Array.from(
+        { length: championship.teamSize - 1 },
+        (_, i) => i
+    );
 
     return (
         <Form
             className="w-full max-w-xs flex flex-col gap-4 justify-center items-center"
             onSubmit={async (e) => {
                 e.preventDefault();
-                const {nickname} = Object.fromEntries(
-                    new FormData(e.currentTarget),
-                ) as {
-                    nickname: string;
-                };
+                const formData = new FormData(e.currentTarget);
+                const leadNickname = formData.get("leadNickname") as string;
 
-                await joinChampionship(championship, nickname);
-                addToast({
-                    title: `You have joined ${championship.title}`,
-                    color: "primary",
-                    variant: "solid",
-                });
-                onJoin();
+                const teammateNicknames: string[] = teammateFields.map((i) =>
+                    formData.get(`teammate_${i}`)?.toString().trim() ?? ""
+                ).filter(n => n !== "");
+
+                if (teammateNicknames.length !== championship.teamSize - 1) {
+                    addToast({
+                        title: "Incomplete team",
+                        description: `Please enter ${championship.teamSize - 1} teammate nickname(s)`,
+                        color: "danger",
+                        variant: "solid",
+                    });
+                    return;
+                }
+
+                try {
+                    await joinChampionship(championship, leadNickname, teammateNicknames);
+                    addToast({
+                        title: `You have joined ${championship.title}`,
+                        color: "primary",
+                        variant: "solid",
+                    });
+                    onJoin();
+                } catch (err) {
+                    addToast({
+                        title: "Join Failed",
+                        description: "Something went wrong",
+                        color: "danger",
+                        variant: "solid",
+                    });
+                }
             }}
         >
             <Input
                 isRequired
                 errorMessage="Please enter a valid nickname"
-                label="Your game nickname"
+                label="Your nickname"
                 labelPlacement="outside"
-                name="nickname"
-                placeholder="Enter nickname"
+                name="leadNickname"
+                placeholder="Enter leader nickname"
                 type="text"
             />
+
+            {teammateFields.map((i) => (
+                <Input
+                    key={i}
+                    isRequired
+                    errorMessage="Please enter teammate nickname"
+                    label={`Teammate #${i + 1}`}
+                    labelPlacement="outside"
+                    name={`teammate_${i}`}
+                    placeholder="Enter teammate nickname"
+                    type="text"
+                />
+            ))}
+
             <Button color="primary" type="submit">
                 Join (
-                {championship.entryFee > 0 ? `$MW ${convertMistToSui(championship.entryFee)}` : "Free"})
+                {championship.ticketPrice > 0
+                    ? `${convertMistToSui(championship.ticketPrice)} Sui`
+                    : "Free"}
+                )
             </Button>
         </Form>
     );

@@ -5,6 +5,7 @@ import { Button } from "@heroui/button";
 import { useRouter } from "next/navigation";
 
 import Championships from "@/components/championships";
+import {Card} from "@heroui/card";
 
 export default function ChampionshipPage({
   params: paramsPromise,
@@ -15,7 +16,7 @@ export default function ChampionshipPage({
   const router = useRouter();
 
   return (
-    <div>
+    <Card className="p-4 min-w-52">
       <Button
         color="secondary"
         radius="lg"
@@ -28,6 +29,6 @@ export default function ChampionshipPage({
         Back
       </Button>
       <Championships game={params.game} />
-    </div>
+    </Card>
   );
 }

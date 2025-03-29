@@ -7,7 +7,9 @@ import { Select, SelectItem } from "@heroui/react";
 import { useTransaction } from "@/app/hooks";
 import { CoinIcon } from "@/components/icons";
 
-export const games = [{ key: "LoL", label: "League of Legends" }];
+export const games = [
+    { key: "LoL", label: "League of Legends" },
+];
 
 export const CreateChampionship = ({
   onSuccess,
@@ -27,17 +29,19 @@ export const CreateChampionship = ({
             description,
             game,
             teamSize,
-            entryFee,
-            joinersLimit,
+            ticketPrice,
+            teamsLimit,
             discordLink,
+            discordAdminName,
           } = Object.fromEntries(new FormData(e.currentTarget)) as {
             title: string;
             description: string;
             game: string;
             teamSize: string;
-            entryFee: string;
-            joinersLimit: string;
+            ticketPrice: string;
+            teamsLimit: string;
             discordLink: string;
+            discordAdminName: string;
           };
 
           await createChampionship(
@@ -45,9 +49,10 @@ export const CreateChampionship = ({
             description,
             game,
             teamSize,
-            entryFee,
-            joinersLimit,
+            ticketPrice,
+            teamsLimit,
             discordLink,
+              discordAdminName,
           );
           onSuccess?.();
           window.dispatchEvent(new Event("update-championships"));
@@ -120,7 +125,18 @@ export const CreateChampionship = ({
       />
 
       <Input
+          isRequired
+          errorMessage="Please enter Discord Admin Name"
+          label="Discord Admin Name"
+          labelPlacement="outside"
+          name="discordAdminName"
+          placeholder="Enter the Discord Admin Name"
+          type="text"
+      />
+
+      <Input
         isRequired
+        defaultValue="5"
         errorMessage="Please enter a valid team size"
         label="Team Size"
         labelPlacement="outside"
@@ -131,27 +147,29 @@ export const CreateChampionship = ({
 
       <Input
         isRequired
-        errorMessage="Please enter a valid entry fee"
-        label="Entry Fee"
+        defaultValue="5"
+        errorMessage="Please enter a valid ticket price"
+        label="Entry Ticket Price in Sui"
         labelPlacement="outside"
-        name="entryFee"
-        placeholder="e.g. 10"
+        name="ticketPrice"
+        placeholder="e.g. 10 Sui"
         type="number"
       />
 
       <Input
         isRequired
-        errorMessage="Please enter a valid joiners limit"
-        label="Joiners Limit"
+        defaultValue="100"
+        errorMessage="Please enter a valid teans limit"
+        label="Teams Limit"
         labelPlacement="outside"
-        name="joinersLimit"
+        name="teamsLimit"
         placeholder="e.g. 100"
         type="number"
       />
 
       <div className="flex gap-2">
         <Button className="gap-0" color="primary" type="submit">
-          Create (Pay 1&nbsp;
+          Create (Pay 5&nbsp;
           <CoinIcon color="white" height={16} width={16} />)
         </Button>
         <Button type="reset" variant="flat">

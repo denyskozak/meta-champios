@@ -24,6 +24,7 @@
   "@heroui/switch": "2.2.12",
   "@heroui/system": "2.4.10",
   "@heroui/theme": "2.4.9",
+  "@mysten/bcs": "^1.5.0",
   "@mysten/dapp-kit": "^0.14.50",
   "@mysten/sui": "^1.21.2",
   "@react-aria/ssr": "3.9.7",

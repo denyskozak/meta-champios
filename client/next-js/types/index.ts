@@ -5,23 +5,34 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
 };
 
 export interface Championship {
-  description: string;
-  entryFee: number;
-  game: string;
   id: string;
-  participants: {
-    address: string;
-    coinAmount: number;
-    joinTime: number;
-    nickname: string;
-  }[];
+  title: string;
+  description: string;
+  gameName: string;
+  ticketPrice: number; // ticket_price
   rewardPool: {
     value: number;
   };
-  status: number;
-  participantsLimit: number;
-  teamSize: number;
-  title: string;
-  admin: string;
-  discordLink: string;
+  status: number; // 0 = Open, 1 = Ongoing, 2 = Closed
+  teamSize: number; // team_size
+  participantsLimit: number; // teams_limit
+  discordLink: string; // discord_chat_link
+  admin: {
+    address: string;
+    nickname: string;
+  };
+  teams: {
+    leaderAddress: string;
+    leadNickname: string;
+    teammateNicknames: string[];
+  }[];
+  bracket?: {
+    currentRound: number;
+    matches: {
+      teamA: string;
+      teamB: string;
+      winner: string | null;
+      round: number;
+    }[];
+  };
 }

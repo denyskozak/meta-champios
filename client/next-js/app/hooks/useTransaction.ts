@@ -4,6 +4,7 @@ import { useZKLogin } from "react-sui-zk-login-kit";
 import { PACKAGE_ID } from "@/consts";
 import { Championship } from "@/types";
 import { MIST_PER_SUI } from "@/utiltiies";
+import {bcs} from "@mysten/bcs";
 
 export const useTransaction = () => {
   const { address, client, executeTransaction } = useZKLogin();
@@ -48,24 +49,19 @@ export const useTransaction = () => {
   };
 
   return {
-    async changeStatus(championshipId: string, status: number) {
+    async startChampionship(championshipId: string) {
       try {
-        // 1. Build the transaction
         const tx = new Transaction();
         const champ = tx.object(championshipId);
 
-        // 2. Move call to finish
         tx.moveCall({
-          target: `${PACKAGE_ID}::championship::change_status`,
+          target: `${PACKAGE_ID}::championship::start_championship`,
           arguments: [
             champ,
-            tx.pure.u8(status), // pass the array of addresses
           ],
         });
 
-        // 3. Sign and execute
         await handleSignAndExecute(tx);
-        console.log("Finish succeeded!");
       } catch (error) {
         console.error("Error change status championship:", error);
       }
@@ -105,19 +101,22 @@ export const useTransaction = () => {
         console.error("Error in topUpChampionship:", error);
       }
     },
-    async joinChampionship(championship: Championship, nickname: string) {
+    async joinChampionship(championship: Championship, lead_name: string, teammateNicknames: string[]) {
       try {
         const tx = new Transaction();
-        const isFreeChampionship = Number(championship.entryFee) === 0;
+        const isFreeChampionship = Number(championship.ticketPrice) === 0;
         // We need a mutable reference to the coin and the championship object
         // So we pass them as objects in the transaction
         const champ = tx.object(championship.id);
-        const nicknameParam = tx.pure.string(nickname);
+        const nicknameParam = tx.pure.string(lead_name);
+        const teammateNicknamesParam = tx.pure(
+            bcs.vector(bcs.string()).serialize(teammateNicknames).toBytes()
+        );
 
         if (isFreeChampionship) {
           tx.moveCall({
             target: `${PACKAGE_ID}::championship::join_free`,
-            arguments: [champ, nicknameParam],
+            arguments: [champ, nicknameParam, teammateNicknamesParam],
           });
         } else {
           const coins = await getUserCoins();
@@ -127,12 +126,12 @@ export const useTransaction = () => {
           }
 
           const [championshipFee] = tx.splitCoins(tx.gas, [
-            Number(championship.entryFee),
+            Number(championship.ticketPrice),
           ]);
 
           tx.moveCall({
             target: `${PACKAGE_ID}::championship::join_paid`,
-            arguments: [champ, nicknameParam, championshipFee],
+            arguments: [champ, nicknameParam, teammateNicknamesParam, championshipFee],
           });
         }
 
@@ -147,9 +146,10 @@ export const useTransaction = () => {
       description: string,
       game: string,
       teamSize: string,
-      entryFee: string,
+      ticketPrice: string,
       joinersLimit: string,
       discordLink: string,
+      discordAdminName: string,
     ) {
       const coins = await getUserCoins();
 
@@ -159,7 +159,7 @@ export const useTransaction = () => {
 
       const tx = new Transaction();
 
-      const [championshipCreateFee] = tx.splitCoins(tx.gas, [MIST_PER_SUI]);
+      const [championshipCreateFee] = tx.splitCoins(tx.gas, [MIST_PER_SUI * 5]);
 
       // Move Call
       tx.moveCall({
@@ -169,9 +169,10 @@ export const useTransaction = () => {
           tx.pure.string(description),
           tx.pure.string(game),
           tx.pure.u64(teamSize),
-          tx.pure.u64(Number(entryFee) * MIST_PER_SUI),
+          tx.pure.u64(Number(ticketPrice) * MIST_PER_SUI),
           tx.pure.u64(joinersLimit),
           tx.pure.string(discordLink),
+          tx.pure.string(discordAdminName),
           championshipCreateFee,
         ],
       });

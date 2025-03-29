@@ -15,7 +15,6 @@ export default function ChampionshipPage({
   const params = React.use(paramsPromise);
   const [championship, setChampionship] = useState<Championship | null>(null);
 
-  console.log("params ", params);
   const { data, isPending, isError, error, refetch } = useSuiClientQuery(
     "getObject",
     {
@@ -41,7 +40,6 @@ export default function ChampionshipPage({
   }, [data]);
   console.log("data ", data);
 
-  console.log("championship ", championship);
 
   return (
     <div>

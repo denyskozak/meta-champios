@@ -2,15 +2,7 @@
 import React, {useMemo, useState} from "react";
 import {useZKLogin} from "react-sui-zk-login-kit";
 import {Button} from "@heroui/button";
-import {Checkbox, CheckboxGroup, Progress} from "@heroui/react";
-import {
-    Table,
-    TableHeader,
-    TableBody,
-    TableColumn,
-    TableRow,
-    TableCell,
-} from "@heroui/react";
+import {Checkbox, Progress, Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@heroui/react";
 import {useRouter} from "next/navigation";
 
 import {useTransaction} from "@/app/hooks";
@@ -28,63 +20,59 @@ interface IChampionship {
 export function Championship({data, onRefresh}: IChampionship) {
     const {address} = useZKLogin();
     const router = useRouter();
-    const {changeStatus, finishChampionship} = useTransaction();
+    const {startChampionship, finishChampionship} = useTransaction();
 
-    const [selectedWinnerAddresses, setSelectedWinnerAddresses] = useState<
-        string[]
-    >([]);
+    const [selectedWinnerAddresses, setSelectedWinnerAddresses] = useState<string[]>([]);
     const [joinModalVisible, setJoinModalVisible] = useState(false);
 
-    const handleFinish = async  () => {
+    const handleFinish = async () => {
         if (data) {
-           await finishChampionship(data?.id, selectedWinnerAddresses);
-           onRefresh();
+            await finishChampionship(data?.id, selectedWinnerAddresses);
+            onRefresh();
         }
     };
 
-    const handleToggleWinner = (address: string) => {
-        const exist = selectedWinnerAddresses.some(winnerAddress => address === winnerAddress);
-        if (exist) {
-            setSelectedWinnerAddresses(addresses => addresses.filter(winnerAddress => winnerAddress === address))
-        } else {
-            setSelectedWinnerAddresses([...selectedWinnerAddresses, address]);
-        }
+    const handleToggleWinner = (teamAddress: string) => {
+        setSelectedWinnerAddresses((prev) =>
+            prev.includes(teamAddress)
+                ? prev.filter((addr) => addr !== teamAddress)
+                : [...prev, teamAddress]
+        );
     };
 
-    const isParticipant = useMemo(
-        () =>
-            data.participants.some((participant) => participant.address === address),
-        [data.participants],
+    const isInTeam = useMemo(
+        () => data.teams.some((team) => team.leaderAddress === address),
+        [data.teams, address]
     );
+
     const renderJoinButtonText = (championship: ChampionshipType) =>
-        championship.entryFee === 0
-            ? "Free"
-            : `Join (${convertMistToSui(championship.entryFee)} coins)`;
+        championship.ticketPrice === 0
+            ? "Join (Free)"
+            : `Join (${convertMistToSui(championship.ticketPrice)} coins)`;
 
     return (
-        <div>
+        <div className="mb-6 mt-6">
             <Button
                 color="secondary"
-                disabled={isParticipant}
                 radius="lg"
                 size="sm"
                 variant="solid"
                 onPress={() => {
-                    router.push(`/championships/${data.game}`);
+                    router.push(`/championships/${data.gameName}`);
                 }}
             >
                 Back
             </Button>
 
             <div className="flex flex-col gap-4">
-                <span>Status: {renderStatus(data.status)}</span>
+                <h1 className="text-lg font-semibold text-center" >Status: {renderStatus(data.status)}</h1>
 
-                {data?.status === 0 && data.admin === address && (
+                {data.status === 0 && data.admin.address === address && (
                     <Button
                         color="primary"
                         variant="solid"
                         onPress={async () => {
-                           await changeStatus(data.id, 1);
+                            await startChampionship(data.id);
                             onRefresh();
                         }}
                     >
@@ -94,7 +82,7 @@ export function Championship({data, onRefresh}: IChampionship) {
 
                 <Button
                     color="primary"
-                    disabled={isParticipant}
+                    disabled={isInTeam}
                     radius="lg"
                     size="sm"
                     variant="solid"
@@ -102,27 +90,100 @@ export function Championship({data, onRefresh}: IChampionship) {
                         setJoinModalVisible(true);
                     }}
                 >
-                    {isParticipant ? "You are Registered" : renderJoinButtonText(data)}
+                    {isInTeam ? "You are Registered" : renderJoinButtonText(data)}
                 </Button>
 
-                <Table aria-label="Information Table" hideHeader={true}>
-                    <TableHeader>
-                        <TableColumn>name</TableColumn>
-                        <TableColumn>value</TableColumn>
-                    </TableHeader>
+                {data.bracket && (
+                    <div className="mt-6">
+                        <h2 className="text-lg font-semibold">Tournament Bracket</h2>
+                        <Table aria-label="Bracket Table">
+                            <TableHeader>
+                                <TableColumn>Round</TableColumn>
+                                <TableColumn>Team A</TableColumn>
+                                <TableColumn>Team B</TableColumn>
+                                <TableColumn>Winner</TableColumn>
+                            </TableHeader>
+                            <TableBody>
+                                {data.bracket.matches.map((match, index) => {
+                                    const winner = match.winner
+                                        ? match.winner === match.teamA
+                                            ? "Team A"
+                                            : "Team B"
+                                        : "—";
+                                    return (
+                                        <TableRow key={index}>
+                                            <TableCell>{match.round}</TableCell>
+                                            <TableCell>
+                                                <code className="text-sm">{match.teamA}</code>
+                                            </TableCell>
+                                            <TableCell>
+                                                <code className="text-sm">{match.teamB}</code>
+                                            </TableCell>
+                                            <TableCell>
+                                                {match.winner ? (
+                                                    <span className="text-green-600 font-semibold">{winner}</span>
+                                                ) : (
+                                                    <span className="text-gray-400">Pending</span>
+                                                )}
+                                            </TableCell>
+                                        </TableRow>
+                                    );
+                                })}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+                {data.admin.address === address && (
+                    <div className="mt-6">
+                        <h2 className="text-lg font-semibold">Teams</h2>
+                        <Table aria-label="Teams Table">
+                            <TableHeader>
+                                <TableColumn>Lead Nickname</TableColumn>
+                                <TableColumn>Leader Address</TableColumn>
+                                <TableColumn>Teammates</TableColumn>
+                                <TableColumn>Actions</TableColumn>
+                            </TableHeader>
 
+                            <TableBody>
+                                {data.teams.map((team) => (
+                                    <TableRow key={team.leaderAddress}>
+                                        <TableCell>{team.leadNickname}</TableCell>
+                                        <TableCell>{team.leaderAddress}</TableCell>
+                                        <TableCell>{team.teammateNicknames.join(", ")}</TableCell>
+                                        <TableCell>
+                                            {data.status === 1 && (
+                                                <Checkbox
+                                                    isSelected={selectedWinnerAddresses.includes(team.leaderAddress)}
+                                                    onChange={() => handleToggleWinner(team.leaderAddress)}
+                                                >
+                                                    Mark as Winner
+                                                </Checkbox>
+                                            )}
+                                        </TableCell>
+                                    </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                )}
+
+                <Table aria-label="Championship Info" hideHeader={true}>
+                    <TableHeader>
+                        <TableColumn>Name</TableColumn>
+                        <TableColumn>Value</TableColumn>
+                    </TableHeader>
                     <TableBody>
                         <TableRow>
                             <TableCell>ID</TableCell>
                             <TableCell>{data.id}</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell>Discord Link</TableCell>
+                            <TableCell>Discord</TableCell>
                             <TableCell>{data.discordLink}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Admin</TableCell>
-                            <TableCell>{data.admin}</TableCell>
+                            <TableCell>{data.admin.nickname} ({data.admin.address})</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Title</TableCell>
@@ -134,7 +195,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                         </TableRow>
                         <TableRow>
                             <TableCell>Game</TableCell>
-                            <TableCell>{data.game}</TableCell>
+                            <TableCell>{data.gameName}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Team Size</TableCell>
@@ -143,7 +204,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                         <TableRow>
                             <TableCell>Entry Fee</TableCell>
                             <TableCell className="flex gap-2">
-                                {convertMistToSui(data.entryFee)} <CoinIcon/>
+                                {convertMistToSui(data.ticketPrice)} <CoinIcon/>
                             </TableCell>
                         </TableRow>
                         <TableRow>
@@ -153,7 +214,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                             </TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell>Participants</TableCell>
+                            <TableCell>Teams</TableCell>
                             <TableCell>
                                 <Progress
                                     classNames={{
@@ -163,55 +224,33 @@ export function Championship({data, onRefresh}: IChampionship) {
                                         label: "tracking-wider font-medium text-default-600",
                                         value: "text-foreground/60",
                                     }}
-                                    label={`Capability ${data.participantsLimit}`}
+                                    label={`Capacity ${data.participantsLimit}`}
                                     radius="sm"
                                     showValueLabel={true}
                                     size="sm"
-                                    value={data.participants.length === 0 ? 0 : (data.participants.length / data.participantsLimit) * 100}
+                                    value={
+                                        data.teams.length === 0
+                                            ? 0
+                                            : (data.teams.length / data.participantsLimit) * 100
+                                    }
                                 />
                             </TableCell>
                         </TableRow>
                     </TableBody>
                 </Table>
 
-                {/*If Admin*/}
-                <Table aria-label="Information Table">
-                    <TableHeader>
-                        <TableColumn>Nickname</TableColumn>
-                        <TableColumn>Address</TableColumn>
-                        <TableColumn>Actions</TableColumn>
-                    </TableHeader>
 
-                    <TableBody>
-                        {data?.participants
-                            ? data?.participants?.map(({address, nickname}) => (
+                {/* Complete button for admin during status 1 (ongoing) */}
+                {data.admin.address === address && data.status === 1 && (
+                    <Button
+                        onPress={handleFinish}
+                        disabled={selectedWinnerAddresses.length === 0}
+                    >
+                        Complete Championship
+                    </Button>
+                )}
 
-                                <TableRow   key={address}>
-                                    <TableCell>{nickname}</TableCell>
-                                    <TableCell>{address}</TableCell>
-                                    <TableCell>
-                                        {data?.admin === address && data.status === 1
-                                            ? (
-                                                <Checkbox key={address} onChange={() => {
-                                                    handleToggleWinner(address);
-                                                }} value={address}>
-                                                    Mark as Winner
-                                                </Checkbox>
-                                            )
-                                            : null
-                                        }
-                                    </TableCell>
-                                </TableRow>
-
-                            ))
-                            : []}
-
-                    </TableBody>
-                </Table>
-
-                {data?.admin === address && data?.status === 1 ? (
-                    <Button onPress={handleFinish} disabled={selectedWinnerAddresses.length === 0}>Complete</Button>
-                ) : null}
+                {/* Join Modal */}
                 <Modal
                     actions={[]}
                     open={joinModalVisible}

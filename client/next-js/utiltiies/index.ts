@@ -27,103 +27,148 @@ export const renderStatus = (status: number): string => {
 // map champ
 
 export interface MoveChampionshipGraphQL {
-  description: string;
-  entry_fee: string;
-  game: string;
   id: string;
-  participants: any[]; // Replace 'any[]' with a more specific type if needed
+  title: string;
+  description: string;
+  game_name: string;
+  ticket_price: string;
   reward_pool: {
     value: string;
   };
-  status: number;
+  admin: {
+    address: string;
+    discord_nickname: string;
+  };
+  discord_chat_link: string;
   team_size: string;
-  discord_link: string;
-  participants_limit: number;
-  title: string;
-  admin: string;
+  teams_limit: number;
+  teams: {
+    leader_address: string;
+    lead_nickname: string;
+    teammate_nicknames: string[];
+  }[];
+  bracket?: {
+    matches: {
+      team_a: string;
+      team_b: string;
+      winner: string | null;
+      round: string;
+    }[];
+    current_round: string;
+  };
+  status: number;
 }
 
 export const mapChampionshipGraphQL = (
-  item: MoveChampionshipGraphQL,
+    item: MoveChampionshipGraphQL,
 ): Championship => {
-  const {
-    entry_fee,
-    reward_pool,
-    discord_link,
-    participants_limit,
-    team_size,
-    status,
-    ...props
-  } = item;
-
   return {
-    entryFee: Number(entry_fee),
+    id: item.id,
+    title: item.title,
+    description: item.description,
+    gameName: item.game_name,
+    ticketPrice: Number(item.ticket_price),
     rewardPool: {
-      value: Number(reward_pool?.value),
+      value: Number(item.reward_pool?.value),
     },
-    status: Number(status),
-    teamSize: Number(team_size),
-    participantsLimit: Number(participants_limit),
-    discordLink: discord_link,
-    ...props,
+    status: Number(item.status),
+    teamSize: Number(item.team_size),
+    participantsLimit: Number(item.teams_limit),
+    discordLink: item.discord_chat_link,
+    admin: {
+      address: item.admin.address,
+      nickname: item.admin.discord_nickname,
+    },
+    teams: item.teams.map((team) => ({
+      leaderAddress: team.leader_address,
+      leadNickname: team.lead_nickname,
+      teammateNicknames: team.teammate_nicknames,
+    })),
+    bracket: item.bracket
+        ? {
+          currentRound: Number(item.bracket.current_round),
+          matches: item.bracket.matches.map((match) => ({
+            teamA: match.team_a,
+            teamB: match.team_b,
+            winner: match.winner ?? null,
+            round: Number(match.round),
+          })),
+        }
+        : undefined,
   };
 };
-
 export interface MoveChampionshipRPC {
+  id: { id: string };
+  title: string;
   description: string;
-  entry_fee: string;
-  game: string;
-  id: {
-    id: string;
-  };
-  participants: {
+  game_name: string;
+  ticket_price: string;
+  reward_pool: string;
+  admin: {
     fields: {
       address: string;
-      coin_amount: string;
-      join_time: string;
-      nickname: string;
+      discord_nickname: string;
+    };
+  };
+  discord_chat_link: string;
+  team_size: string;
+  teams_limit: number;
+  teams: {
+    fields: {
+      leader_address: string;
+      lead_nickname: string;
+      teammate_nicknames: string[];
     };
   }[];
-  reward_pool: string;
+  bracket?: {
+    fields: {
+      current_round: string;
+      matches: {
+        fields: {
+          team_a: string;
+          team_b: string;
+          winner: string | null;
+          round: string;
+        };
+      }[];
+    };
+  };
   status: number;
-  team_size: string;
-  discord_link: string;
-  participants_limit: number;
-  title: string;
-  admin: string;
 }
 
 export const mapChampionshipRPC = (item: MoveChampionshipRPC): Championship => {
-  const {
-    id,
-    entry_fee,
-    reward_pool,
-    discord_link,
-    participants_limit,
-    team_size,
-    status,
-    participants,
-    ...props
-  } = item;
-
   return {
-    id: id.id,
-    entryFee: Number(entry_fee),
+    id: item.id.id,
+    title: item.title,
+    description: item.description,
+    gameName: item.game_name,
+    ticketPrice: Number(item.ticket_price),
     rewardPool: {
-      value: Number(reward_pool),
+      value: Number(item.reward_pool),
     },
-    status: Number(status),
-    teamSize: Number(team_size),
-    participantsLimit: Number(participants_limit),
-    discordLink: discord_link,
-    participants: participants.map(
-      ({ fields: { address, coin_amount, join_time, nickname } }) => ({
-        address,
-        coinAmount: Number(coin_amount),
-        joinTime: Number(join_time),
-        nickname,
-      }),
-    ),
-    ...props,
+    status: Number(item.status),
+    teamSize: Number(item.team_size),
+    participantsLimit: Number(item.teams_limit),
+    discordLink: item.discord_chat_link,
+    admin: {
+      address: item.admin.fields.address,
+      nickname: item.admin.fields.discord_nickname,
+    },
+    teams: item.teams.map(({ fields }) => ({
+      leaderAddress: fields.leader_address,
+      leadNickname: fields.lead_nickname,
+      teammateNicknames: fields.teammate_nicknames,
+    })),
+    bracket: item.bracket
+        ? {
+          currentRound: Number(item.bracket.fields.current_round),
+          matches: item.bracket.fields.matches.map(({ fields }) => ({
+            teamA: fields.team_a,
+            teamB: fields.team_b,
+            winner: fields.winner ?? null,
+            round: Number(fields.round),
+          })),
+        }
+        : undefined,
   };
 };
