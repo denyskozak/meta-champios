@@ -41,7 +41,6 @@ module meta_wars::championship {
         teammate_nicknames: vector<String>,
     }
 
-
     public struct Admin has store {
         address: address,
         discord_nickname: String,
