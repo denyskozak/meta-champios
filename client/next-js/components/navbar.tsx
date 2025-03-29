@@ -53,7 +53,6 @@ export const Navbar = () => {
         return () => { clearInterval(intervalId); };
     }, []);
 
-  console.log('data ', data)
   const searchInput = (
     <Input
       aria-label="Search"
@@ -120,13 +119,6 @@ export const Navbar = () => {
         </NavbarItem>
         {/*<NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem>*/}
         <NavbarItem className="hidden md:flex gap-4">
-          <Button
-            className="text-sm font-normal text-default-600 bg-default-100"
-            variant="flat"
-            onPress={() => router.push("/login")}
-          >
-            {address ? "Profile" : "Sign in"}
-          </Button>
           {address ? (
             <>
               <Button
@@ -148,18 +140,17 @@ export const Navbar = () => {
                 variant="flat"
               >
                 <CoinIcon className="text-danger" />
-                {` ${convertMistToSui(data?.totalBalance || '0')}`}
-              </Button>
-
-              <Button
-                className="text-sm font-normal text-default-600 bg-default-100"
-                variant="flat"
-                onPress={() => logout()}
-              >
-                Logout
+                {` ${convertMistToSui(data?.totalBalance ? Number(data?.totalBalance) : 0)}`}
               </Button>
             </>
           ) : null}
+            <Button
+                className="text-sm font-normal text-default-600 bg-default-100"
+                variant="flat"
+                onPress={() => router.push("/login")}
+            >
+                {address ? "Profile" : "Sign in"}
+            </Button>
         </NavbarItem>
       </NavbarContent>
 
