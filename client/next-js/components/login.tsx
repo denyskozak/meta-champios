@@ -39,7 +39,7 @@ export const Login = () => {
 
     return (
         <div className="flex justify-center flex-col gap-8 items-center -translate-y-24">
-            <Image alt="Logo" height={280} src="/logo_big.png" width={180}/>
+            {/*<Image alt="Logo" height={280} src="/logo_big.png" width={180}/>*/}
 
             <ZKLogin
                 disableRemoveHash
