@@ -40,7 +40,7 @@ export const Login = () => {
     }, [encodedJwt]);
 
     return (
-        <div className="flex justify-center flex-col gap-8 items-center -translate-y-24">
+        <div className="flex justify-center flex-col gap-8 items-center">
             {/*<Image alt="Logo" height={280} src="/logo_big.png" width={180}/>*/}
 
             <ZKLogin

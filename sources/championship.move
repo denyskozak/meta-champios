@@ -19,6 +19,7 @@ module meta_wars::championship {
     const ChampionshipFreeError: u64 = 10;
     const YouAreNotAdmin: u64 = 11;
     const ChampionshipOnGoing: u64 = 12;
+    const NotAllMatchesComplet: u64 = 13;
 
     const FounderAddress: address = @0xe683e99499e137aaa545de0ba866784f7d7ee63fb2227a4c894cdf64d784b386;
 
@@ -83,7 +84,10 @@ module meta_wars::championship {
         payment: coin::Coin<SUI>,
         ctx: &mut TxContext,
     ) {
-        assert!(payment.value() == MIST_PER_SUI * 5, UserHasNoEnoughtCoins); // user need to pay 10 Sui for create, temporary
+        assert!(
+            payment.value() == MIST_PER_SUI * 5,
+            UserHasNoEnoughtCoins
+        ); // user need to pay 10 Sui for create, temporary
 
         transfer::public_transfer(payment, FounderAddress); // send payment for create championship
 
@@ -116,7 +120,7 @@ module meta_wars::championship {
         transfer::share_object(championship)
     }
 
-   // Open functions
+    // Open functions
     public fun join_paid(
         championship: &mut Championship,
         team_name: String,
@@ -160,7 +164,6 @@ module meta_wars::championship {
 
         let team = Team {
             name: team_name,
-
             leader_address: ctx.sender(),
             lead_nickname,
             teammate_nicknames
@@ -255,6 +258,8 @@ module meta_wars::championship {
         let mut i = 0;
         while (i < vector::length(current_matches)) {
             let m = &mut current_matches[i];
+            assert!(!option::is_none(&m.winner_leader_address), NotAllMatchesComplet);
+
             let winner_leader_address = option::extract(&mut m.winner_leader_address);
 
             // looking for winner team
@@ -273,10 +278,15 @@ module meta_wars::championship {
 
         let mut j = 0;
         let len = vector::length(&winner_teams);
+        if (len == 1) {
+            championship::finish(championship, vector<address>[ winner_teams[len].leader_address]);
+            return;
+        };
+
         while (j < len) {
             let a = winner_teams[j];
-            let b = if (j+1 < len) {
-                winner_teams[j+1]
+            let b = if (j + 1 < len) {
+                winner_teams[j + 1]
             } else {
                 a // win without fight
             };
