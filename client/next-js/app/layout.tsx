@@ -7,6 +7,8 @@ import { Providers } from "./providers";
 import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { Navbar } from "@/components/navbar";
+import {Player} from "@/components/player";
+
 
 export const metadata: Metadata = {
   title: {
@@ -69,6 +71,9 @@ export default function RootLayout({
             {/*    <p className="text-primary">HeroUI</p>*/}
             {/*  </Link>*/}
             {/*</footer>*/}
+          </div>
+          <div className="fixed w-54 bottom-1 right-1 z-[2]">
+            <Player />
           </div>
         </Providers>
         <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/TextPlugin.min.js"/>

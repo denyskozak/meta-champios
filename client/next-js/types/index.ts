@@ -4,6 +4,13 @@ export type IconSvgProps = SVGProps<SVGSVGElement> & {
   size?: number;
 };
 
+export interface Team {
+  name: string;
+  leaderAddress: string;
+  leadNickname: string;
+  teammateNicknames: string[];
+}
+
 export interface Championship {
   id: string;
   title: string;
@@ -21,17 +28,13 @@ export interface Championship {
     address: string;
     nickname: string;
   };
-  teams: {
-    leaderAddress: string;
-    leadNickname: string;
-    teammateNicknames: string[];
-  }[];
+  teams: Team[];
   bracket?: {
     currentRound: number;
     matches: {
-      teamA: string;
-      teamB: string;
-      winner: string | null;
+      teamA: Team;
+      teamB: Team;
+      winnerLeaderAddress: string | null;
       round: number;
     }[];
   };

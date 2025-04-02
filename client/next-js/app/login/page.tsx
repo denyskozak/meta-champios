@@ -10,7 +10,7 @@ const LoginPage = () => {
   return (
     <section
       className="flex items-center flex-col justify-center w-screen h-screen"
-      style={{ margin: "0 auto", marginBottom: "2rem" }}
+
     >
       <Login />
     </section>

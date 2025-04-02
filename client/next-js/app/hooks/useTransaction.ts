@@ -4,7 +4,7 @@ import { useZKLogin } from "react-sui-zk-login-kit";
 import { PACKAGE_ID } from "@/consts";
 import { Championship } from "@/types";
 import { MIST_PER_SUI } from "@/utiltiies";
-import {bcs} from "@mysten/bcs";
+import { bcs } from "@mysten/bcs";
 
 export const useTransaction = () => {
   const { address, client, executeTransaction } = useZKLogin();
@@ -16,12 +16,6 @@ export const useTransaction = () => {
 
     tx.setGasBudget(100000000);
 
-    // const dryResult = await client.dryRunTransactionBlock({
-    //     transactionBlock: await tx.build({ client })
-    // });
-    //
-    // console.log('dryResult ', dryResult)
-
     const digest = await executeTransaction(tx);
 
     if (!digest) throw new Error("No digest tx");
@@ -29,7 +23,6 @@ export const useTransaction = () => {
     console.log("result tx digest ", digest);
   };
 
-  // Fetch user's coin objects
   async function getUserCoins() {
     const coins = await client.getCoins({
       owner: address || "",
@@ -49,107 +42,127 @@ export const useTransaction = () => {
   };
 
   return {
+    async sendCoins(toAddress: string, coins: number) {
+      const txSplit = new Transaction();
+      const [gasCoin] = txSplit.splitCoins(txSplit.gas, [MIST_PER_SUI * coins]);
+
+      txSplit.transferObjects([gasCoin], toAddress || "");
+      txSplit.setSender(address || "");
+      await executeTransaction(txSplit);
+    },
+
     async startChampionship(championshipId: string) {
-      try {
-        const tx = new Transaction();
-        const champ = tx.object(championshipId);
+      const tx = new Transaction();
+      const champ = tx.object(championshipId);
 
-        tx.moveCall({
-          target: `${PACKAGE_ID}::championship::start_championship`,
-          arguments: [
-            champ,
-          ],
-        });
+      tx.moveCall({
+        target: `${PACKAGE_ID}::championship::start_championship`,
+        arguments: [champ],
+      });
 
-        await handleSignAndExecute(tx);
-      } catch (error) {
-        console.error("Error change status championship:", error);
-      }
+      await handleSignAndExecute(tx);
     },
-    async finishChampionship(
-      championshipId: string,
-      winnerAddresses: string[],
-    ) {
-      try {
-        // 1. Build the transaction
-        const tx = new Transaction();
-        const champ = tx.object(championshipId);
 
-        // 2. Move call to finish
-        tx.moveCall({
-          target: `${PACKAGE_ID}::championship::finish`,
-          arguments: [
-            champ,
-            tx.pure.vector("address", winnerAddresses), // pass the array of addresses
-          ],
-        });
+    async reportMatchResult(championshipId: string, matchIndex: number, winnerLeaderAddress: string) {
+      const tx = new Transaction();
+      const champ = tx.object(championshipId);
 
-        // 3. Sign and execute
-        await handleSignAndExecute(tx);
-        console.log("Finish succeeded!");
-      } catch (error) {
-        console.error("Error finishing championship:", error);
-      }
+      tx.moveCall({
+        target: `${PACKAGE_ID}::championship::report_match_result`,
+        arguments: [
+          champ,
+          tx.pure.u64(matchIndex),
+          tx.pure.address(winnerLeaderAddress),
+        ],
+      });
+
+      await handleSignAndExecute(tx);
     },
+    async advanceToNextRound(championshipId: string) {
+      const tx = new Transaction();
+      const champ = tx.object(championshipId);
+
+      tx.moveCall({
+        target: `${PACKAGE_ID}::championship::advance_to_next_round`,
+        arguments: [
+          champ,
+        ],
+      });
+
+      await handleSignAndExecute(tx);
+    },
+
+    async finishChampionship(championshipId: string) {
+      const tx = new Transaction();
+      const champ = tx.object(championshipId);
+
+      tx.moveCall({
+        target: `${PACKAGE_ID}::championship::finish`,
+        arguments: [
+          champ,
+        ],
+      });
+
+      await handleSignAndExecute(tx);
+      console.log("Finish succeeded!");
+    },
+
     async topUpChampionship(championshipId: string, topUpAmount: number) {
-      try {
-        const tx = new Transaction();
-
-        await handleSignAndExecute(tx);
-        console.log("Top-up succeeded!");
-      } catch (error) {
-        console.error("Error in topUpChampionship:", error);
-      }
+      const tx = new Transaction();
+      await handleSignAndExecute(tx);
+      console.log("Top-up succeeded!");
     },
-    async joinChampionship(championship: Championship, lead_name: string, teammateNicknames: string[]) {
-      try {
-        const tx = new Transaction();
-        const isFreeChampionship = Number(championship.ticketPrice) === 0;
-        // We need a mutable reference to the coin and the championship object
-        // So we pass them as objects in the transaction
-        const champ = tx.object(championship.id);
-        const nicknameParam = tx.pure.string(lead_name);
-        const teammateNicknamesParam = tx.pure(
-            bcs.vector(bcs.string()).serialize(teammateNicknames).toBytes()
-        );
 
-        if (isFreeChampionship) {
-          tx.moveCall({
-            target: `${PACKAGE_ID}::championship::join_free`,
-            arguments: [champ, nicknameParam, teammateNicknamesParam],
-          });
-        } else {
-          const coins = await getUserCoins();
+    async joinChampionship(championship: Championship, teamName: string, leadName: string, teammateNicknames: string[]) {
+      const tx = new Transaction();
+      const isFreeChampionship = Number(championship.ticketPrice) === 0;
+      const champ = tx.object(championship.id);
+      const nicknameParam = tx.pure.string(leadName);
+      const teamNameParam = tx.pure.string(teamName);
+      const teammateNicknamesParam = tx.pure(
+          bcs.vector(bcs.string()).serialize(teammateNicknames).toBytes()
+      );
 
-          if (coins.length === 1) {
-            await splitCoinForHaveGas();
-          }
+      if (isFreeChampionship) {
+        tx.moveCall({
+          target: `${PACKAGE_ID}::championship::join_free`,
+          arguments: [champ, teamNameParam, nicknameParam, teammateNicknamesParam],
+        });
+      } else {
+        const coins = await getUserCoins();
 
-          const [championshipFee] = tx.splitCoins(tx.gas, [
-            Number(championship.ticketPrice),
-          ]);
-
-          tx.moveCall({
-            target: `${PACKAGE_ID}::championship::join_paid`,
-            arguments: [champ, nicknameParam, teammateNicknamesParam, championshipFee],
-          });
+        if (coins.length === 1) {
+          await splitCoinForHaveGas();
         }
 
-        await handleSignAndExecute(tx);
-      } catch (error) {
-        console.error(error);
-        alert("Error joining championship. Check console.");
+        const [championshipFee] = tx.splitCoins(tx.gas, [
+          Number(championship.ticketPrice),
+        ]);
+
+        tx.moveCall({
+          target: `${PACKAGE_ID}::championship::join_paid`,
+          arguments: [
+            champ,
+            teamNameParam,
+            nicknameParam,
+            teammateNicknamesParam,
+            championshipFee,
+          ],
+        });
       }
+
+      await handleSignAndExecute(tx);
     },
+
     async createChampionship(
-      title: string,
-      description: string,
-      game: string,
-      teamSize: string,
-      ticketPrice: string,
-      joinersLimit: string,
-      discordLink: string,
-      discordAdminName: string,
+        title: string,
+        description: string,
+        game: string,
+        teamSize: string,
+        ticketPrice: string,
+        joinersLimit: string,
+        discordLink: string,
+        discordAdminName: string,
     ) {
       const coins = await getUserCoins();
 
@@ -158,10 +171,8 @@ export const useTransaction = () => {
       }
 
       const tx = new Transaction();
-
       const [championshipCreateFee] = tx.splitCoins(tx.gas, [MIST_PER_SUI * 5]);
 
-      // Move Call
       tx.moveCall({
         target: `${PACKAGE_ID}::championship::create`,
         arguments: [
@@ -176,6 +187,7 @@ export const useTransaction = () => {
           championshipCreateFee,
         ],
       });
+
       await handleSignAndExecute(tx);
     },
   };

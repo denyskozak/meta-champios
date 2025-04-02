@@ -2,7 +2,7 @@
 import React, {useMemo, useState} from "react";
 import {useZKLogin} from "react-sui-zk-login-kit";
 import {Button} from "@heroui/button";
-import {Checkbox, Progress, Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@heroui/react";
+import {Progress, Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@heroui/react";
 import {useRouter} from "next/navigation";
 
 import {useTransaction} from "@/app/hooks";
@@ -20,25 +20,9 @@ interface IChampionship {
 export function Championship({data, onRefresh}: IChampionship) {
     const {address} = useZKLogin();
     const router = useRouter();
-    const {startChampionship, finishChampionship} = useTransaction();
+    const {startChampionship, reportMatchResult, advanceToNextRound, finishChampionship} = useTransaction();
 
-    const [selectedWinnerAddresses, setSelectedWinnerAddresses] = useState<string[]>([]);
     const [joinModalVisible, setJoinModalVisible] = useState(false);
-
-    const handleFinish = async () => {
-        if (data) {
-            await finishChampionship(data?.id, selectedWinnerAddresses);
-            onRefresh();
-        }
-    };
-
-    const handleToggleWinner = (teamAddress: string) => {
-        setSelectedWinnerAddresses((prev) =>
-            prev.includes(teamAddress)
-                ? prev.filter((addr) => addr !== teamAddress)
-                : [...prev, teamAddress]
-        );
-    };
 
     const isInTeam = useMemo(
         () => data.teams.some((team) => team.leaderAddress === address),
@@ -47,8 +31,27 @@ export function Championship({data, onRefresh}: IChampionship) {
 
     const renderJoinButtonText = (championship: ChampionshipType) =>
         championship.ticketPrice === 0
-            ? "Join (Free)"
-            : `Join (${convertMistToSui(championship.ticketPrice)} coins)`;
+            ? "Register Your Team (Free)"
+            : `Register Your Team (${convertMistToSui(championship.ticketPrice)} coins)`;
+
+    const allMatchesHaveWinner = data.bracket?.matches.every(match => match.winnerLeaderAddress) || false;
+    const noMatchesLeft = !(data.bracket?.matches.length === 1 && data.bracket?.matches?.[0].winnerLeaderAddress);
+    const teamWinners = useMemo(() => {
+        const winnerAddresses = new Set();
+        data.bracket?.matches.forEach(match => {
+            winnerAddresses.add(match.winnerLeaderAddress);
+        });
+
+        const winnerTeams: string[] = [];
+
+        data.teams.forEach(team => {
+            if (winnerAddresses.has(team.leaderAddress)) {
+                winnerTeams.push(team.name);
+            }
+        });
+
+        return winnerTeams;
+    }, [data.status]);
 
     return (
         <div className="mb-6 mt-6">
@@ -65,8 +68,8 @@ export function Championship({data, onRefresh}: IChampionship) {
             </Button>
 
             <div className="flex flex-col gap-4">
-                <h1 className="text-lg font-semibold text-center" >Status: {renderStatus(data.status)}</h1>
-
+                <h1 className="text-lg font-semibold text-center">Status: {renderStatus(data.status)}</h1>
+                {data.status === 2 ? <h2>Winner Teams: {teamWinners.join(' ,')}</h2> : null}
                 {data.status === 0 && data.admin.address === address && (
                     <Button
                         color="primary"
@@ -80,21 +83,27 @@ export function Championship({data, onRefresh}: IChampionship) {
                     </Button>
                 )}
 
-                <Button
-                    color="primary"
-                    disabled={isInTeam}
-                    radius="lg"
-                    size="sm"
-                    variant="solid"
-                    onPress={() => {
-                        setJoinModalVisible(true);
-                    }}
-                >
-                    {isInTeam ? "You are Registered" : renderJoinButtonText(data)}
-                </Button>
+                {data.status === 0 && (
+                    <Button
+                        color="primary"
+                        disabled={isInTeam}
+                        radius="lg"
+                        size="sm"
+                        variant="solid"
+                        onPress={() => {
+                            if (!address) {
+                                router.push('/login');
+                                return;
+                            }
+                            setJoinModalVisible(true);
+                        }}
+                    >
+                        {isInTeam ? "You are Registered" : renderJoinButtonText(data)}
+                    </Button>
+                )}
 
-                {data.bracket && (
-                    <div className="mt-6">
+                {data.bracket && data.status === 1 && (
+                    <div className="mt-6 flex gap-6 flex-col">
                         <h2 className="text-lg font-semibold">Tournament Bracket</h2>
                         <Table aria-label="Bracket Table">
                             <TableHeader>
@@ -102,64 +111,84 @@ export function Championship({data, onRefresh}: IChampionship) {
                                 <TableColumn>Team A</TableColumn>
                                 <TableColumn>Team B</TableColumn>
                                 <TableColumn>Winner</TableColumn>
+                                <TableColumn>Actions</TableColumn>
                             </TableHeader>
                             <TableBody>
                                 {data.bracket.matches.map((match, index) => {
-                                    const winner = match.winner
-                                        ? match.winner === match.teamA
-                                            ? "Team A"
-                                            : "Team B"
+                                    const winner = match.winnerLeaderAddress
+                                        ? [match.teamA, match.teamB].find((team) => team.leaderAddress === match.winnerLeaderAddress)?.name || ''
                                         : "—";
                                     return (
                                         <TableRow key={index}>
                                             <TableCell>{match.round}</TableCell>
                                             <TableCell>
-                                                <code className="text-sm">{match.teamA}</code>
+                                                <code className="text-sm">{match.teamA.name}</code>
                                             </TableCell>
                                             <TableCell>
-                                                <code className="text-sm">{match.teamB}</code>
+                                                <code className="text-sm">{match.teamB.name}</code>
                                             </TableCell>
                                             <TableCell>
-                                                {match.winner ? (
+                                                {match.winnerLeaderAddress ? (
                                                     <span className="text-green-600 font-semibold">{winner}</span>
                                                 ) : (
                                                     <span className="text-gray-400">Pending</span>
                                                 )}
+                                            </TableCell>
+                                            <TableCell className="gap-2 flex">
+                                                <Button color="secondary"
+                                                        onPress={async () => {
+                                                            await reportMatchResult(data.id, index, match.teamA.leaderAddress);
+                                                            onRefresh()
+                                                        }}>{match.teamA.name} Win</Button>
+                                                <Button color="secondary"
+                                                        onPress={async () => {
+                                                            await reportMatchResult(data.id, index, match.teamB.leaderAddress);
+                                                            onRefresh();
+                                                        }}>{match.teamB.name} Win</Button>
                                             </TableCell>
                                         </TableRow>
                                     );
                                 })}
                             </TableBody>
                         </Table>
+                        {noMatchesLeft && <Button onPress={async () => {
+                            await advanceToNextRound(data.id)
+                        }}>Next Round</Button>}
+
+                        {allMatchesHaveWinner && <Button onPress={async () => {
+                            await finishChampionship(data.id)
+                        }}>Finish</Button>}
                     </div>
                 )}
-                {data.admin.address === address && (
+                {(
                     <div className="mt-6">
                         <h2 className="text-lg font-semibold">Teams</h2>
                         <Table aria-label="Teams Table">
                             <TableHeader>
+                                <TableColumn>Name</TableColumn>
                                 <TableColumn>Lead Nickname</TableColumn>
                                 <TableColumn>Leader Address</TableColumn>
                                 <TableColumn>Teammates</TableColumn>
-                                <TableColumn>Actions</TableColumn>
+                                {/*<TableColumn>Actions</TableColumn>*/}
                             </TableHeader>
 
                             <TableBody>
                                 {data.teams.map((team) => (
                                     <TableRow key={team.leaderAddress}>
+                                        <TableCell>{team.name}</TableCell>
                                         <TableCell>{team.leadNickname}</TableCell>
                                         <TableCell>{team.leaderAddress}</TableCell>
                                         <TableCell>{team.teammateNicknames.join(", ")}</TableCell>
-                                        <TableCell>
-                                            {data.status === 1 && (
-                                                <Checkbox
-                                                    isSelected={selectedWinnerAddresses.includes(team.leaderAddress)}
-                                                    onChange={() => handleToggleWinner(team.leaderAddress)}
-                                                >
-                                                    Mark as Winner
-                                                </Checkbox>
-                                            )}
-                                        </TableCell>
+                                        {/*<TableCell>*/}
+                                        {/*    {data.admin.address === address && (*/}
+                                        {/*        <Checkbox*/}
+                                        {/*            isSelected={selectedWinnerAddresses.includes(team.leaderAddress)}*/}
+                                        {/*            onChange={() => handleToggleWinner(team.leaderAddress)}*/}
+                                        {/*        >*/}
+                                        {/*            Mark as Winner*/}
+                                        {/*        </Checkbox>*/}
+                                        {/*    )}*/}
+                                        {/*</TableCell>*/}
                                     </TableRow>
                                 ))}
                             </TableBody>
@@ -238,17 +267,6 @@ export function Championship({data, onRefresh}: IChampionship) {
                         </TableRow>
                     </TableBody>
                 </Table>
-
-
-                {/* Complete button for admin during status 1 (ongoing) */}
-                {data.admin.address === address && data.status === 1 && (
-                    <Button
-                        onPress={handleFinish}
-                        disabled={selectedWinnerAddresses.length === 0}
-                    >
-                        Complete Championship
-                    </Button>
-                )}
 
                 {/* Join Modal */}
                 <Modal
