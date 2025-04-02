@@ -16,7 +16,7 @@ export default function ChampionshipPage({
   const router = useRouter();
 
   return (
-    <Card className="p-4 min-w-52">
+    <div className="flex flex-col gap-4">
       <Button
         color="secondary"
         radius="lg"
@@ -28,7 +28,9 @@ export default function ChampionshipPage({
       >
         Back
       </Button>
-      <Championships game={params.game} />
-    </Card>
+      <Card className="p-4">
+          <Championships game={params.game} />
+      </Card>
+    </div>
   );
 }

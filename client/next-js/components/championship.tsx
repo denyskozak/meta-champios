@@ -55,18 +55,6 @@ export function Championship({data, onRefresh}: IChampionship) {
 
     return (
         <div className="mb-6 mt-6">
-            <Button
-                color="secondary"
-                radius="lg"
-                size="sm"
-                variant="solid"
-                onPress={() => {
-                    router.push(`/championships/${data.gameName}`);
-                }}
-            >
-                Back
-            </Button>
-
             <div className="flex flex-col gap-4">
                 <h1 className="text-lg font-semibold text-center">Status: {renderStatus(data.status)}</h1>
                 {data.status === 2 ? <h2>Winner Teams: {teamWinners.join(' ,')}</h2> : null}
@@ -156,7 +144,8 @@ export function Championship({data, onRefresh}: IChampionship) {
                         }}>Next Round</Button>}
 
                         {allMatchesHaveWinner && <Button onPress={async () => {
-                            await finishChampionship(data.id)
+                            await finishChampionship(data.id);
+                            onRefresh();
                         }}>Finish</Button>}
                     </div>
                 )}
