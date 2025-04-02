@@ -92,7 +92,7 @@ export const useTransaction = () => {
       await handleSignAndExecute(tx);
     },
 
-    async finishChampionship(championshipId: string, winnerAddresses: string[]) {
+    async finishChampionship(championshipId: string) {
       const tx = new Transaction();
       const champ = tx.object(championshipId);
 
@@ -100,7 +100,6 @@ export const useTransaction = () => {
         target: `${PACKAGE_ID}::championship::finish`,
         arguments: [
           champ,
-          tx.pure.vector("address", winnerAddresses),
         ],
       });
 

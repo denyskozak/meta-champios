@@ -22,16 +22,20 @@ export const Player = () => {
         };
 
         // Try autoplay (might fail) TODO return it
-        // audio.play().catch((e) => {
-        //     console.log('1 ', e)
-        //     // Wait for user interaction
-        //     window.addEventListener("click", handleInteraction);
-        // });
+        audio.play().catch((e) => {
+            console.log('1 ', e)
+            // Wait for user interaction
+            window.addEventListener("click", handleInteraction);
+        });
     }, []);
 
     return (
-        <audio ref={audioRef} controls autoPlay>
+        <audio ref={audioRef} controls>
             <source src="/gods.mp3" type="audio/mpeg"/>
+            <track
+                default
+                kind="captions"
+                srcLang="en"/>
             Your browser does not support the audio element.
         </audio>
     )

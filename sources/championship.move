@@ -8,7 +8,6 @@ module meta_wars::championship {
 
     /// Error codes
     const ChampionshipClosedError: u64 = 1;
-    const NotAdminError: u64 = 2;
     const ChampionshipNotOngoingError: u64 = 3;
     const NoWinnersError: u64 = 4;
     const EmptyRewardPoolError: u64 = 5;
@@ -20,6 +19,7 @@ module meta_wars::championship {
     const YouAreNotAdmin: u64 = 11;
     const ChampionshipOnGoing: u64 = 12;
     const NotAllMatchesComplet: u64 = 13;
+    const NoMatchesLeftUseFinish: u64 = 14;
 
     const FounderAddress: address = @0xe683e99499e137aaa545de0ba866784f7d7ee63fb2227a4c894cdf64d784b386;
 
@@ -174,11 +174,22 @@ module meta_wars::championship {
 
     public fun finish(
         championship: &mut Championship,
-        winner_addresses: vector<address>,
         ctx: &mut TxContext
     ) {
         assert!(championship.admin.address == ctx.sender(), YouAreNotAdmin);
         assert!(championship.status == 1, ChampionshipNotOngoingError);
+
+        let bracket = &mut championship.bracket;
+        let current_matches = &mut bracket.matches;
+
+        let mut winner_addresses = vector::empty<address>();
+        let mut i = 0;
+        while (i < vector::length(current_matches)) {
+            let m = &mut current_matches[i];
+            assert!(!option::is_none(&m.winner_leader_address), NotAllMatchesComplet);
+            vector::push_back(&mut winner_addresses, option::extract(&mut m.winner_leader_address));
+            i = i + 1;
+        };
 
         let winner_count = vector::length(&winner_addresses);
         assert!(winner_count > 0, NoWinnersError);
@@ -267,7 +278,7 @@ module meta_wars::championship {
             while (team_i < vector::length(&championship.teams)) {
                 if (championship.teams[team_i].leader_address == winner_leader_address) {
                     vector::push_back(&mut winner_teams, championship.teams[team_i]);
-                    break;
+                    break
                 };
 
                 team_i = team_i + 1;
@@ -276,13 +287,10 @@ module meta_wars::championship {
             i = i + 1;
         };
 
-        let mut j = 0;
         let len = vector::length(&winner_teams);
-        if (len == 1) {
-            championship::finish(championship, vector<address>[ winner_teams[len].leader_address]);
-            return;
-        };
+        assert!(len != 1, NoMatchesLeftUseFinish);
 
+        let mut j = 0;
         while (j < len) {
             let a = winner_teams[j];
             let b = if (j + 1 < len) {

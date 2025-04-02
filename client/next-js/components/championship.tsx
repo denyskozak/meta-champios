@@ -2,7 +2,7 @@
 import React, {useMemo, useState} from "react";
 import {useZKLogin} from "react-sui-zk-login-kit";
 import {Button} from "@heroui/button";
-import {Checkbox, Progress, Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@heroui/react";
+import {Progress, Table, TableHeader, TableBody, TableColumn, TableRow, TableCell} from "@heroui/react";
 import {useRouter} from "next/navigation";
 
 import {useTransaction} from "@/app/hooks";
@@ -35,6 +35,24 @@ export function Championship({data, onRefresh}: IChampionship) {
             : `Register Your Team (${convertMistToSui(championship.ticketPrice)} coins)`;
 
     const allMatchesHaveWinner = data.bracket?.matches.every(match => match.winnerLeaderAddress) || false;
+    const noMatchesLeft = !(data.bracket?.matches.length === 1 && data.bracket?.matches?.[0].winnerLeaderAddress);
+    const teamWinners = useMemo(() => {
+        const winnerAddresses = new Set();
+        data.bracket?.matches.forEach(match => {
+            winnerAddresses.add(match.winnerLeaderAddress);
+        });
+
+        const winnerTeams: string[] = [];
+
+        data.teams.forEach(team => {
+            if (winnerAddresses.has(team.leaderAddress)) {
+                winnerTeams.push(team.name);
+            }
+        });
+
+        return winnerTeams;
+    }, [data.status]);
+
     return (
         <div className="mb-6 mt-6">
             <Button
@@ -51,7 +69,7 @@ export function Championship({data, onRefresh}: IChampionship) {
 
             <div className="flex flex-col gap-4">
                 <h1 className="text-lg font-semibold text-center">Status: {renderStatus(data.status)}</h1>
-
+                {data.status === 2 ? <h2>Winner Teams: {teamWinners.join(' ,')}</h2> : null}
                 {data.status === 0 && data.admin.address === address && (
                     <Button
                         color="primary"
@@ -133,12 +151,12 @@ export function Championship({data, onRefresh}: IChampionship) {
                                 })}
                             </TableBody>
                         </Table>
-                        <Button onPress={async () => {
+                        {noMatchesLeft && <Button onPress={async () => {
                             await advanceToNextRound(data.id)
-                        }}>Next Round</Button>
+                        }}>Next Round</Button>}
 
                         {allMatchesHaveWinner && <Button onPress={async () => {
-                            await finishChampionship(data.id, data.bracket?.matches.map(match => match.winnerLeaderAddress || '') || [])
+                            await finishChampionship(data.id)
                         }}>Finish</Button>}
                     </div>
                 )}
