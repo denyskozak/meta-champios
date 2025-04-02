@@ -185,9 +185,9 @@ module meta_wars::championship {
         let mut winner_addresses = vector::empty<address>();
         let mut i = 0;
         while (i < vector::length(current_matches)) {
-            let m = &mut current_matches[i];
+            let m = &current_matches[i];
             assert!(!option::is_none(&m.winner_leader_address), NotAllMatchesComplet);
-            vector::push_back(&mut winner_addresses, option::extract(&mut m.winner_leader_address));
+            vector::push_back(&mut winner_addresses, *option::borrow(&m.winner_leader_address));
             i = i + 1;
         };
 
