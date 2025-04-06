@@ -45,6 +45,20 @@ export const JoinChampionship = ({
                 }
 
                 try {
+                    if (championship.ticketPrice === 0) {
+                        await fetch('/api/championships/join', {
+                            method: "POST",
+                            body: JSON.stringify({
+                                championshipId: championship.id,
+                                teamName,
+                                leadNickname,
+                                teammateNicknames
+                            }),
+                            headers: {
+                                "Content-Type": "application/json",
+                            }
+                        })
+                    }
                     await joinChampionship(championship, teamName, leadNickname, teammateNicknames);
                     addToast({
                         title: `You have joined ${championship.title}`,

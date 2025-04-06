@@ -116,7 +116,7 @@ export const useTransaction = () => {
     async joinChampionship(championship: Championship, teamName: string, leadName: string, teammateNicknames: string[]) {
       const tx = new Transaction();
       const isFreeChampionship = Number(championship.ticketPrice) === 0;
-      const champ = tx.object(championship.id);
+      const championObjectParam = tx.object(championship.id);
       const nicknameParam = tx.pure.string(leadName);
       const teamNameParam = tx.pure.string(teamName);
       const teammateNicknamesParam = tx.pure(
@@ -126,7 +126,7 @@ export const useTransaction = () => {
       if (isFreeChampionship) {
         tx.moveCall({
           target: `${PACKAGE_ID}::championship::join_free`,
-          arguments: [champ, teamNameParam, nicknameParam, teammateNicknamesParam],
+          arguments: [championObjectParam, teamNameParam, nicknameParam, teammateNicknamesParam],
         });
       } else {
         const coins = await getUserCoins();
@@ -142,7 +142,7 @@ export const useTransaction = () => {
         tx.moveCall({
           target: `${PACKAGE_ID}::championship::join_paid`,
           arguments: [
-            champ,
+            championObjectParam,
             teamNameParam,
             nicknameParam,
             teammateNicknamesParam,

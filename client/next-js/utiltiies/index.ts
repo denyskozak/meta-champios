@@ -1,4 +1,4 @@
-import {Championship, Team} from "@/types";
+import {Championship as ChampionshipType, Championship, Team} from "@/types";
 
 export const MIST_PER_SUI = 1000000000;
 
@@ -7,6 +7,11 @@ export function convertMistToSui(suiAmount?: number) {
 
   return (suiAmount / MIST_PER_SUI).toFixed(2);
 }
+
+export const renderJoinButtonText = (championship: ChampionshipType): string =>
+    championship.ticketPrice === 0
+        ? "Free"
+        : `${convertMistToSui(championship.ticketPrice)} coins`;
 
 export const renderStatus = (status: number): string => {
   switch (status) {

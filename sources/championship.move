@@ -1,5 +1,6 @@
 module meta_wars::championship {
     use std::string::String;
+    use std::vector;
     use sui::balance;
     use sui::coin;
     use sui::sui::{SUI};
@@ -20,6 +21,7 @@ module meta_wars::championship {
     const ChampionshipOnGoing: u64 = 12;
     const NotAllMatchesComplet: u64 = 13;
     const NoMatchesLeftUseFinish: u64 = 14;
+    const PlayerAlreadyRegistred: u64 = 15;
 
     const FounderAddress: address = @0xe683e99499e137aaa545de0ba866784f7d7ee63fb2227a4c894cdf64d784b386;
 

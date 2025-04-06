@@ -26,7 +26,7 @@ import {CoinIcon} from "@/components/icons";
 import {
     convertMistToSui,
     mapChampionshipGraphQL,
-    MoveChampionshipGraphQL, renderStatus,
+    MoveChampionshipGraphQL, renderJoinButtonText, renderStatus,
 } from "@/utiltiies";
 import {games} from "@/components/create-championship";
 
@@ -166,6 +166,7 @@ export default function Championships({game}: ChampionshipsProps) {
                         <Table aria-label="Bracket Table">
                             <TableHeader>
                                 <TableColumn>Name</TableColumn>
+                                <TableColumn>Ticket Price</TableColumn>
                                 <TableColumn>Status</TableColumn>
                                 <TableColumn>Team Size</TableColumn>
                                 <TableColumn>Reward Pool</TableColumn>
@@ -177,6 +178,7 @@ export default function Championships({game}: ChampionshipsProps) {
                                     return (
                                         <TableRow key={championship.id}>
                                             <TableCell> {championship.title}</TableCell>
+                                            <TableCell> {renderJoinButtonText(championship)}</TableCell>
                                             <TableCell> {renderStatus(championship.status)}</TableCell>
                                             <TableCell> {championship.teamSize}X{championship.teamSize}</TableCell>
                                             <TableCell> {convertMistToSui(championship?.rewardPool?.value)}</TableCell>

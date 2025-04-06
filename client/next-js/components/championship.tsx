@@ -8,7 +8,7 @@ import {useRouter} from "next/navigation";
 import {useTransaction} from "@/app/hooks";
 import {Championship as ChampionshipType} from "@/types";
 import {CoinIcon} from "@/components/icons";
-import {convertMistToSui, renderStatus} from "@/utiltiies";
+import {convertMistToSui, renderJoinButtonText, renderStatus} from "@/utiltiies";
 import {Modal} from "@/components/modal";
 import {JoinChampionship} from "@/components/join-championship";
 
@@ -29,10 +29,7 @@ export function Championship({data, onRefresh}: IChampionship) {
         [data.teams, address]
     );
 
-    const renderJoinButtonText = (championship: ChampionshipType) =>
-        championship.ticketPrice === 0
-            ? "Register Your Team (Free)"
-            : `Register Your Team (${convertMistToSui(championship.ticketPrice)} coins)`;
+
 
     const allMatchesHaveWinner = data.bracket?.matches.every(match => match.winnerLeaderAddress) || false;
     const noMatchesLeft = !(data.bracket?.matches.length === 1 && data.bracket?.matches?.[0].winnerLeaderAddress);
@@ -86,7 +83,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                             setJoinModalVisible(true);
                         }}
                     >
-                        {isInTeam ? "You are Registered" : renderJoinButtonText(data)}
+                        {isInTeam ? "You are Registered" : `Register Your Team ${renderJoinButtonText(data)}`}
                     </Button>
                 )}
 

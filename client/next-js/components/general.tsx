@@ -8,6 +8,7 @@ import Link from "next/link";
 
 import { title as getTitle, subtitle } from "@/components/primitives";
 import { useAnimation } from "@/app/hooks/useAnimation";
+import {useRouter} from "next/navigation";
 
 // Sui JS SDK
 
@@ -21,6 +22,7 @@ gsap.registerPlugin(useGSAP);
 export default function General() {
   const container = useRef(null);
   const logoRef = useRef(null);
+  const router = useRouter();
   const [fadeInClass] = useAnimation();
 
   useGSAP(
@@ -121,8 +123,8 @@ export default function General() {
         {/*    <span className={`${getTitle()} fade-in-animation`}>Championships&nbsp;</span>*/}
         {/*</div>*/}
 
-        <Button className="bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg">
-          <Link href="/championships">Explore Championships</Link>
+        <Button onPress={() => router.push('/championships')} className="bg-gradient-to-tr from-pink-500 to-yellow-500 text-white shadow-lg">
+          Explore Championships
         </Button>
       </section>
     </div>
