@@ -58,8 +58,9 @@ export const JoinChampionship = ({
                                 "Content-Type": "application/json",
                             }
                         })
+                    } else {
+                        await joinChampionship(championship, teamName, leadNickname, teammateNicknames);
                     }
-                    await joinChampionship(championship, teamName, leadNickname, teammateNicknames);
                     addToast({
                         title: `You have joined ${championship.title}`,
                         color: "primary",

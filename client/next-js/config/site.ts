@@ -12,6 +12,10 @@ export const siteConfig = {
       label: "Championships",
       href: "/championships",
     },
+    {
+      label: "FAQ",
+      href: "/faq",
+    },
     // {
     //   label: "Pricing",
     //   href: "/pricing",

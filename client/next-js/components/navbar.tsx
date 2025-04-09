@@ -115,7 +115,7 @@ export const Navbar = () => {
           <Link isExternal aria-label="Github" href={siteConfig.links.github}>
             <GithubIcon className="text-default-500" />
           </Link>
-          <ThemeSwitch />
+          {/*<ThemeSwitch />*/}
         </NavbarItem>
         {/*<NavbarItem className="hidden lg:flex">{searchInput}</NavbarItem>*/}
         <NavbarItem className="hidden md:flex gap-4">
@@ -139,6 +139,7 @@ export const Navbar = () => {
                 className="text-sm font-normal text-default-600 bg-default-100"
                 variant="flat"
               >
+                  Balance:
                 <CoinIcon className="text-danger" />
                 {` ${convertMistToSui(data?.totalBalance ? Number(data?.totalBalance) : 0)}`}
               </Button>
