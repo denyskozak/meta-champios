@@ -3,9 +3,9 @@
 import React from "react";
 import { Button } from "@heroui/button";
 import { useRouter } from "next/navigation";
+import { Card } from "@heroui/card";
 
 import Championships from "@/components/championships";
-import {Card} from "@heroui/card";
 
 export default function ChampionshipPage({
   params: paramsPromise,
@@ -18,11 +18,11 @@ export default function ChampionshipPage({
   return (
     <div className="flex flex-col gap-4">
       <Button
+        className="w-32"
         color="secondary"
         radius="lg"
         size="sm"
         variant="solid"
-        className="w-32"
         onPress={() => {
           router.push(`/championships`);
         }}
@@ -30,7 +30,7 @@ export default function ChampionshipPage({
         Back
       </Button>
       <Card className="p-4">
-          <Championships game={params.game} />
+        <Championships game={params.game} />
       </Card>
     </div>
   );

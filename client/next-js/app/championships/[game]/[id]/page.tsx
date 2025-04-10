@@ -2,12 +2,12 @@
 
 import React, { useEffect, useState } from "react";
 import { useSuiClientQuery } from "@mysten/dapp-kit";
+import { Button } from "@heroui/button";
+import { useRouter } from "next/navigation";
 
-import {Button} from "@heroui/button";
 import { Championship as ChampionshipContent } from "@/components/championship";
 import { mapChampionshipRPC } from "@/utiltiies";
 import { Championship } from "@/types";
-import {useRouter} from "next/navigation";
 
 export default function ChampionshipPage({
   params: paramsPromise,
@@ -43,21 +43,22 @@ export default function ChampionshipPage({
   }, [data]);
 
   return (
-      <div className="flex flex-col">
-          <Button
-              color="secondary"
-              radius="lg"
-              size="sm"
-              variant="solid"
-              className="w-32"
-              onPress={() => {
-                  router.push(`/championships/${championship?.gameName}`);
-              }}
-          >
-              Back
-          </Button>
-          {championship && <ChampionshipContent data={championship} onRefresh={refetch}/>}
-
-      </div>
+    <div className="flex flex-col">
+      <Button
+        className="w-32"
+        color="secondary"
+        radius="lg"
+        size="sm"
+        variant="solid"
+        onPress={() => {
+          router.push(`/championships/${championship?.gameName}`);
+        }}
+      >
+        Back
+      </Button>
+      {championship && (
+        <ChampionshipContent data={championship} onRefresh={refetch} />
+      )}
+    </div>
   );
 }

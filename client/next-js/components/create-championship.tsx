@@ -7,9 +7,7 @@ import { Select, SelectItem } from "@heroui/react";
 import { useTransaction } from "@/app/hooks";
 import { CoinIcon } from "@/components/icons";
 
-export const games = [
-    { key: "LoL", label: "League of Legends" },
-];
+export const games = [{ key: "LoL", label: "League of Legends" }];
 
 export const CreateChampionship = ({
   onSuccess,
@@ -52,7 +50,7 @@ export const CreateChampionship = ({
             ticketPrice,
             teamsLimit,
             discordLink,
-              discordAdminName,
+            discordAdminName,
           );
           onSuccess?.();
           window.dispatchEvent(new Event("update-championships"));
@@ -125,13 +123,13 @@ export const CreateChampionship = ({
       />
 
       <Input
-          isRequired
-          errorMessage="Please enter Discord Admin Name"
-          label="Discord Admin Name"
-          labelPlacement="outside"
-          name="discordAdminName"
-          placeholder="Enter the Discord Admin Name"
-          type="text"
+        isRequired
+        errorMessage="Please enter Discord Admin Name"
+        label="Discord Admin Name"
+        labelPlacement="outside"
+        name="discordAdminName"
+        placeholder="Enter the Discord Admin Name"
+        type="text"
       />
 
       <Input
