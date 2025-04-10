@@ -1,11 +1,21 @@
 "use client";
 
 import General from "@/components/general";
+import {FAQ} from "@/components/faq";
+import { Card } from "@heroui/react";
+import Image from "next/image";
+import React from "react";
 
 export default function Home() {
   return (
-      <section className="">
-             <General/>
+      <div>
+
+              <General/>
+
+          {/*<Card className="max-w-100">*/}
+          {/*    <FAQ/>*/}
+          {/*</Card>*/}
+
 
 
           {/*<div className="flex gap-3">*/}
@@ -37,6 +47,13 @@ export default function Home() {
           {/*</span>*/}
           {/*      </Snippet>*/}
           {/*  </div>*/}
-      </section>
+          <Image
+              alt="Sui logo"
+              className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-[2]"
+              height={200}
+              src="/Sui_Logo_White.svg"
+              width={120}
+          />
+      </div>
   );
 }

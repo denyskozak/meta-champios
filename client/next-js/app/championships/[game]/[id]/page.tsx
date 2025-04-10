@@ -3,9 +3,11 @@
 import React, { useEffect, useState } from "react";
 import { useSuiClientQuery } from "@mysten/dapp-kit";
 
+import {Button} from "@heroui/button";
 import { Championship as ChampionshipContent } from "@/components/championship";
 import { mapChampionshipRPC } from "@/utiltiies";
 import { Championship } from "@/types";
+import {useRouter} from "next/navigation";
 
 export default function ChampionshipPage({
   params: paramsPromise,
@@ -13,6 +15,7 @@ export default function ChampionshipPage({
   params: Promise<{ id: string }>;
 }) {
   const params = React.use(paramsPromise);
+  const router = useRouter();
   const [championship, setChampionship] = useState<Championship | null>(null);
 
   const { data, isPending, isError, error, refetch } = useSuiClientQuery(
@@ -38,14 +41,23 @@ export default function ChampionshipPage({
       setChampionship(mapChampionshipRPC(fields as any));
     }
   }, [data]);
-  console.log("data ", championship);
-
 
   return (
-    <div>
-      <div className="fade-in-animation">
-        {championship && <ChampionshipContent data={championship} onRefresh={refetch} />}
+      <div className="flex flex-col">
+          <Button
+              color="secondary"
+              radius="lg"
+              size="sm"
+              variant="solid"
+              className="w-32"
+              onPress={() => {
+                  router.push(`/championships/${championship?.gameName}`);
+              }}
+          >
+              Back
+          </Button>
+          {championship && <ChampionshipContent data={championship} onRefresh={refetch}/>}
+
       </div>
-    </div>
   );
 }

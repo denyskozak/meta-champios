@@ -7,8 +7,8 @@ export default function ChampionshipPage() {
   const router = useRouter();
 
   return (
-    <div>
-      <div className="fade-in-animation">
+
+      <div className="fade-in-animation overflow-hidden h-full">
         <section className="w-screen h-screen flex justify-center items-center gap-4 flex-col">
           <span>Choose game</span>
           <Card
@@ -27,6 +27,6 @@ export default function ChampionshipPage() {
           </Card>
         </section>
       </div>
-    </div>
+
   );
 }

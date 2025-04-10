@@ -1,83 +1,89 @@
 import "@/styles/globals.css";
-import { Metadata, Viewport } from "next";
+import {Metadata, Viewport} from "next";
 import clsx from "clsx";
 
-import { Providers } from "./providers";
+import {Providers} from "./providers";
 
-import { siteConfig } from "@/config/site";
-import { fontSans } from "@/config/fonts";
-import { Navbar } from "@/components/navbar";
+import {siteConfig} from "@/config/site";
+import {fontSans} from "@/config/fonts";
+import {Navbar} from "@/components/navbar";
 import {Player} from "@/components/player";
+import Image from "next/image";
+import React from "react";
 
 
 export const metadata: Metadata = {
-  title: {
-    default: siteConfig.name,
-    template: `%s - ${siteConfig.name}`,
-  },
-  description: siteConfig.description,
-  icons: {
-    icon: "/logo_big.png",
-  },
+    title: {
+        default: siteConfig.name,
+        template: `%s - ${siteConfig.name}`,
+    },
+    description: siteConfig.description,
+    icons: {
+        icon: "/logo_big.png",
+    },
 };
 
 export const viewport: Viewport = {
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "white" },
-    { media: "(prefers-color-scheme: dark)", color: "black" },
-  ],
+    themeColor: [
+        {media: "(prefers-color-scheme: light)", color: "white"},
+        {media: "(prefers-color-scheme: dark)", color: "black"},
+    ],
 };
 
 export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
+                                       children,
+                                   }: {
+    children: React.ReactNode;
 }) {
-  return (
-    <html suppressHydrationWarning lang="en">
-      <head />
-      <body
-        className={clsx(
-          "min-h-screen bg-background font-sans antialiased",
-          fontSans.variable,
-        )}
-      >
-        <Providers themeProps={{ attribute: "class", defaultTheme: "dark" }}>
-          <Navbar/>
-          <div className="relative justify-center flex flex-col h-screen w-screen">
-            <video
-                autoPlay
-                muted
-                loop
-                playsInline
-                className="blur-sm absolute top-0 left-0 w-full h-full object-cover z-[0]"
-            >
-              <source src="/bg.mp4" type="video/mp4"/>
-              Your browser does not support the video tag.
-            </video>
+    return (
+        <html suppressHydrationWarning lang="en">
+        <head/>
+        <body
+            className={clsx(
+                "min-h-screen bg-background font-sans antialiased ",
+                fontSans.variable,
+            )}
+        >
+        <Providers themeProps={{attribute: "class", defaultTheme: "dark"}}>
+            <div className=" h-screen w-screen">
+                <Navbar/>
+                <div className="relative justify-center flex flex-col w-full h-[calc(100%-64px)]">
+                    <video
+                        autoPlay
+                        muted
+                        loop
+                        playsInline
+                        className="blur-sm absolute top-0 left-0 w-full h-full object-cover z-[0]"
+                    >
+                        <source src="/bg.mp4" type="video/mp4"/>
+                        Your browser does not support the video tag.
+                    </video>
 
-             <main className="z-[1] flex justify-center">
-               {children}
-             </main>
+                    <main className="z-[1] flex justify-center items-center w-full h-full">
+                        {children}
+                    </main>
 
-            {/*<footer className="w-full flex items-center justify-center py-3">*/}
-            {/*  <Link*/}
-            {/*    isExternal*/}
-            {/*    className="flex items-center gap-1 text-current"*/}
-            {/*    href="https://heroui.com?utm_source=next-app-template"*/}
-            {/*    title="heroui.com homepage"*/}
-            {/*  >*/}
-            {/*    <span className="text-default-600">Powered by</span>*/}
-            {/*    <p className="text-primary">HeroUI</p>*/}
-            {/*  </Link>*/}
-            {/*</footer>*/}
-          </div>
-          <div className="fixed w-54 bottom-1 right-1 z-[2]">
-            <Player />
-          </div>
+                    {/*<footer className="w-full flex items-center justify-center py-3">*/}
+                    {/*  <Link*/}
+                    {/*    isExternal*/}
+                    {/*    className="flex items-center gap-1 text-current"*/}
+                    {/*    href="https://heroui.com?utm_source=next-app-template"*/}
+                    {/*    title="heroui.com homepage"*/}
+                    {/*  >*/}
+                    {/*    <span className="text-default-600">Powered by</span>*/}
+                    {/*    <p className="text-primary">HeroUI</p>*/}
+                    {/*  </Link>*/}
+                    {/*</footer>*/}
+                </div>
+
+                <div className="fixed w-54 bottom-1 right-1 z-[2]">
+                    <Player/>
+                </div>
+
+            </div>
         </Providers>
         <script src="https://cdn.jsdelivr.net/npm/gsap@3.12.7/dist/TextPlugin.min.js"/>
-      </body>
-    </html>
-  );
+        </body>
+        </html>
+    );
 }

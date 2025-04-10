@@ -47,9 +47,6 @@ export const Login = () => {
                 disableRemoveHash
                 proverProvider={SUI_PROVER_ENDPOINT}
                 providers={providers}
-                onSuccess={() => {
-                    router.push("/");
-                }}
             />
             {address
                 ? (

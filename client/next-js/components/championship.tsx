@@ -8,9 +8,10 @@ import {useRouter} from "next/navigation";
 import {useTransaction} from "@/app/hooks";
 import {Championship as ChampionshipType} from "@/types";
 import {CoinIcon} from "@/components/icons";
-import {convertMistToSui, renderStatus} from "@/utiltiies";
+import {convertMistToSui, renderJoinButtonText, renderStatus} from "@/utiltiies";
 import {Modal} from "@/components/modal";
 import {JoinChampionship} from "@/components/join-championship";
+import Link from "next/link";
 
 interface IChampionship {
     data: ChampionshipType;
@@ -29,10 +30,6 @@ export function Championship({data, onRefresh}: IChampionship) {
         [data.teams, address]
     );
 
-    const renderJoinButtonText = (championship: ChampionshipType) =>
-        championship.ticketPrice === 0
-            ? "Register Your Team (Free)"
-            : `Register Your Team (${convertMistToSui(championship.ticketPrice)} coins)`;
 
     const allMatchesHaveWinner = data.bracket?.matches.every(match => match.winnerLeaderAddress) || false;
     const noMatchesLeft = !(data.bracket?.matches.length === 1 && data.bracket?.matches?.[0].winnerLeaderAddress);
@@ -54,19 +51,7 @@ export function Championship({data, onRefresh}: IChampionship) {
     }, [data.status]);
 
     return (
-        <div className="mb-6 mt-6">
-            <Button
-                color="secondary"
-                radius="lg"
-                size="sm"
-                variant="solid"
-                onPress={() => {
-                    router.push(`/championships/${data.gameName}`);
-                }}
-            >
-                Back
-            </Button>
-
+        <div className="mb-6">
             <div className="flex flex-col gap-4">
                 <h1 className="text-lg font-semibold text-center">Status: {renderStatus(data.status)}</h1>
                 {data.status === 2 ? <h2>Winner Teams: {teamWinners.join(' ,')}</h2> : null}
@@ -84,12 +69,11 @@ export function Championship({data, onRefresh}: IChampionship) {
                 )}
 
                 {data.status === 0 && (
+
                     <Button
-                        color="primary"
                         disabled={isInTeam}
                         radius="lg"
-                        size="sm"
-                        variant="solid"
+                        size="lg"
                         onPress={() => {
                             if (!address) {
                                 router.push('/login');
@@ -97,8 +81,11 @@ export function Championship({data, onRefresh}: IChampionship) {
                             }
                             setJoinModalVisible(true);
                         }}
-                    >
-                        {isInTeam ? "You are Registered" : renderJoinButtonText(data)}
+                        className=" shadow-lg overflow-hidden group ">
+              <span
+                  className="absolute inset-0 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 animate-pulse opacity-100 group-hover:opacity-100 blur-md"></span>
+                        <span
+                            className="relative z-10">  {isInTeam ? "You are Registered" : `Register Your Team ${renderJoinButtonText(data)}`}</span>
                     </Button>
                 )}
 
@@ -156,7 +143,8 @@ export function Championship({data, onRefresh}: IChampionship) {
                         }}>Next Round</Button>}
 
                         {allMatchesHaveWinner && <Button onPress={async () => {
-                            await finishChampionship(data.id)
+                            await finishChampionship(data.id);
+                            onRefresh();
                         }}>Finish</Button>}
                     </div>
                 )}
@@ -208,7 +196,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                         </TableRow>
                         <TableRow>
                             <TableCell>Discord</TableCell>
-                            <TableCell>{data.discordLink}</TableCell>
+                            <TableCell><Link className="text-red-600" target="_blank" href={data.discordLink}>Link</Link></TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Admin</TableCell>
