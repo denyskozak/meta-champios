@@ -6,6 +6,7 @@ import { addToast } from "@heroui/react";
 import { useTransaction } from "@/app/hooks";
 import { Championship } from "@/types";
 import { convertMistToSui } from "@/utiltiies";
+import {useZKLogin} from "react-sui-zk-login-kit";
 
 export const JoinChampionship = ({
                                      championship,
@@ -14,6 +15,7 @@ export const JoinChampionship = ({
     championship: Championship;
     onJoin: () => void;
 }) => {
+    const { address } = useZKLogin();
     const { joinChampionship } = useTransaction();
 
     const teammateFields = Array.from(
@@ -50,6 +52,7 @@ export const JoinChampionship = ({
                             method: "POST",
                             body: JSON.stringify({
                                 championshipId: championship.id,
+                                leaderAddress: address,
                                 teamName,
                                 leadNickname,
                                 teammateNicknames

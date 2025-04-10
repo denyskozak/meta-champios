@@ -30,7 +30,6 @@ export function Championship({data, onRefresh}: IChampionship) {
     );
 
 
-
     const allMatchesHaveWinner = data.bracket?.matches.every(match => match.winnerLeaderAddress) || false;
     const noMatchesLeft = !(data.bracket?.matches.length === 1 && data.bracket?.matches?.[0].winnerLeaderAddress);
     const teamWinners = useMemo(() => {
@@ -69,12 +68,11 @@ export function Championship({data, onRefresh}: IChampionship) {
                 )}
 
                 {data.status === 0 && (
+
                     <Button
-                        color="primary"
                         disabled={isInTeam}
                         radius="lg"
                         size="sm"
-                        variant="solid"
                         onPress={() => {
                             if (!address) {
                                 router.push('/login');
@@ -82,8 +80,11 @@ export function Championship({data, onRefresh}: IChampionship) {
                             }
                             setJoinModalVisible(true);
                         }}
-                    >
-                        {isInTeam ? "You are Registered" : `Register Your Team ${renderJoinButtonText(data)}`}
+                        className=" shadow-lg overflow-hidden group ">
+              <span
+                  className="absolute inset-0 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 animate-pulse opacity-100 group-hover:opacity-100 blur-md"></span>
+                        <span
+                            className="relative z-10">  {isInTeam ? "You are Registered" : `Register Your Team ${renderJoinButtonText(data)}`}</span>
                     </Button>
                 )}
 

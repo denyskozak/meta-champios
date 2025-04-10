@@ -1,6 +1,5 @@
 module meta_wars::championship {
     use std::string::String;
-    use std::vector;
     use sui::balance;
     use sui::coin;
     use sui::sui::{SUI};
@@ -21,7 +20,6 @@ module meta_wars::championship {
     const ChampionshipOnGoing: u64 = 12;
     const NotAllMatchesComplet: u64 = 13;
     const NoMatchesLeftUseFinish: u64 = 14;
-    const PlayerAlreadyRegistred: u64 = 15;
 
     const FounderAddress: address = @0xe683e99499e137aaa545de0ba866784f7d7ee63fb2227a4c894cdf64d784b386;
 
@@ -33,7 +31,7 @@ module meta_wars::championship {
     }
 
     /// Одна игра в сетке турнира
-    public struct Match has drop, store {
+    public struct Match has drop, copy, store {
         team_a: Team,
         team_b: Team,
         winner_leader_address: option::Option<address>,
@@ -153,10 +151,10 @@ module meta_wars::championship {
 
     public fun join_free(
         championship: &mut Championship,
+        leader_address: address,
         team_name: String,
         lead_nickname: String,
         teammate_nicknames: vector<String>,
-        ctx: &mut TxContext
     ) {
         assert!(championship.status == 0, ChampionshipClosedError);
         assert!(vector::length(&championship.teams) < championship.teams_limit, ChampionshipCapFullError);
@@ -166,7 +164,7 @@ module meta_wars::championship {
 
         let team = Team {
             name: team_name,
-            leader_address: ctx.sender(),
+            leader_address,
             lead_nickname,
             teammate_nicknames
         };
@@ -182,11 +180,11 @@ module meta_wars::championship {
         assert!(championship.status == 1, ChampionshipNotOngoingError);
 
         let bracket = &mut championship.bracket;
-        let current_matches = &mut bracket.matches;
+        let current_matches =  bracket.matches;
 
         let mut winner_addresses = vector::empty<address>();
         let mut i = 0;
-        while (i < vector::length(current_matches)) {
+        while (i < vector::length(&current_matches)) {
             let m = &current_matches[i];
             assert!(!option::is_none(&m.winner_leader_address), NotAllMatchesComplet);
             vector::push_back(&mut winner_addresses, *option::borrow(&m.winner_leader_address));

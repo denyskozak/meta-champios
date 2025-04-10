@@ -16,9 +16,10 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ZKLoginProvider } from "react-sui-zk-login-kit";
 // Config options for the networks you want to connect to
 import { ToastProvider } from "@heroui/toast";
+import {NETWORK} from "@/consts";
 
 const { networkConfig } = createNetworkConfig({
-  testnet: { url: getFullnodeUrl("devnet") },
+  testnet: { url: getFullnodeUrl(NETWORK) },
 });
 const queryClient = new QueryClient();
 
