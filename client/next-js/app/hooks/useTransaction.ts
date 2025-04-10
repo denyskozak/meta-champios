@@ -1,10 +1,10 @@
 import { Transaction } from "@mysten/sui/transactions";
 import { useZKLogin } from "react-sui-zk-login-kit";
+import { bcs } from "@mysten/bcs";
 
 import { PACKAGE_ID } from "@/consts";
 import { Championship } from "@/types";
 import { MIST_PER_SUI } from "@/utiltiies";
-import { bcs } from "@mysten/bcs";
 
 export const useTransaction = () => {
   const { address, client, executeTransaction } = useZKLogin();
@@ -63,7 +63,11 @@ export const useTransaction = () => {
       await handleSignAndExecute(tx);
     },
 
-    async reportMatchResult(championshipId: string, matchIndex: number, winnerLeaderAddress: string) {
+    async reportMatchResult(
+      championshipId: string,
+      matchIndex: number,
+      winnerLeaderAddress: string,
+    ) {
       const tx = new Transaction();
       const champ = tx.object(championshipId);
 
@@ -84,9 +88,7 @@ export const useTransaction = () => {
 
       tx.moveCall({
         target: `${PACKAGE_ID}::championship::advance_to_next_round`,
-        arguments: [
-          champ,
-        ],
+        arguments: [champ],
       });
 
       await handleSignAndExecute(tx);
@@ -98,9 +100,7 @@ export const useTransaction = () => {
 
       tx.moveCall({
         target: `${PACKAGE_ID}::championship::finish`,
-        arguments: [
-          champ,
-        ],
+        arguments: [champ],
       });
 
       await handleSignAndExecute(tx);
@@ -109,24 +109,35 @@ export const useTransaction = () => {
 
     async topUpChampionship(championshipId: string, topUpAmount: number) {
       const tx = new Transaction();
+
       await handleSignAndExecute(tx);
       console.log("Top-up succeeded!");
     },
 
-    async joinChampionship(championship: Championship, teamName: string, leadName: string, teammateNicknames: string[]) {
+    async joinChampionship(
+      championship: Championship,
+      teamName: string,
+      leadName: string,
+      teammateNicknames: string[],
+    ) {
       const tx = new Transaction();
       const isFreeChampionship = Number(championship.ticketPrice) === 0;
       const championObjectParam = tx.object(championship.id);
       const nicknameParam = tx.pure.string(leadName);
       const teamNameParam = tx.pure.string(teamName);
       const teammateNicknamesParam = tx.pure(
-          bcs.vector(bcs.string()).serialize(teammateNicknames).toBytes()
+        bcs.vector(bcs.string()).serialize(teammateNicknames).toBytes(),
       );
 
       if (isFreeChampionship) {
         tx.moveCall({
           target: `${PACKAGE_ID}::championship::join_free`,
-          arguments: [championObjectParam, teamNameParam, nicknameParam, teammateNicknamesParam],
+          arguments: [
+            championObjectParam,
+            teamNameParam,
+            nicknameParam,
+            teammateNicknamesParam,
+          ],
         });
       } else {
         const coins = await getUserCoins();
@@ -155,14 +166,14 @@ export const useTransaction = () => {
     },
 
     async createChampionship(
-        title: string,
-        description: string,
-        game: string,
-        teamSize: string,
-        ticketPrice: string,
-        joinersLimit: string,
-        discordLink: string,
-        discordAdminName: string,
+      title: string,
+      description: string,
+      game: string,
+      teamSize: string,
+      ticketPrice: string,
+      joinersLimit: string,
+      discordLink: string,
+      discordAdminName: string,
     ) {
       const coins = await getUserCoins();
 

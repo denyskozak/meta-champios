@@ -1,4 +1,4 @@
-import {Championship as ChampionshipType, Championship, Team} from "@/types";
+import { Championship as ChampionshipType, Championship, Team } from "@/types";
 
 export const MIST_PER_SUI = 1000000000;
 
@@ -9,9 +9,9 @@ export function convertMistToSui(suiAmount?: number) {
 }
 
 export const renderJoinButtonText = (championship: ChampionshipType): string =>
-    championship.ticketPrice === 0
-        ? "Free"
-        : `${convertMistToSui(championship.ticketPrice)} coins`;
+  championship.ticketPrice === 0
+    ? "Free"
+    : `${convertMistToSui(championship.ticketPrice)} coins`;
 
 export const renderStatus = (status: number): string => {
   switch (status) {
@@ -75,7 +75,7 @@ export interface MoveChampionshipGraphQL {
 }
 
 export const mapChampionshipGraphQL = (
-    item: MoveChampionshipGraphQL,
+  item: MoveChampionshipGraphQL,
 ): Championship => {
   return {
     id: item.id,
@@ -96,7 +96,7 @@ export const mapChampionshipGraphQL = (
     },
     teams: item.teams.map(mapTeam),
     bracket: item.bracket
-        ? {
+      ? {
           currentRound: Number(item.bracket.current_round),
           matches: item.bracket.matches.map((match) => ({
             teamA: mapTeam(match.team_a),
@@ -105,7 +105,7 @@ export const mapChampionshipGraphQL = (
             round: Number(match.round),
           })),
         }
-        : undefined,
+      : undefined,
   };
 };
 export interface MoveChampionshipRPC {
@@ -136,7 +136,7 @@ export interface MoveChampionshipRPC {
             fields: MoveTeam;
           };
           team_b: {
-            fields: MoveTeam
+            fields: MoveTeam;
           };
           winner_leader_address: string | null;
           round: string;
@@ -167,7 +167,7 @@ export const mapChampionshipRPC = (item: MoveChampionshipRPC): Championship => {
     },
     teams: item.teams.map(({ fields }) => mapTeam(fields)),
     bracket: item.bracket
-        ? {
+      ? {
           currentRound: Number(item.bracket.fields.current_round),
           matches: item.bracket.fields.matches.map(({ fields }) => ({
             teamA: mapTeam(fields.team_a.fields),
@@ -176,6 +176,6 @@ export const mapChampionshipRPC = (item: MoveChampionshipRPC): Championship => {
             round: Number(fields.round),
           })),
         }
-        : undefined,
+      : undefined,
   };
 };

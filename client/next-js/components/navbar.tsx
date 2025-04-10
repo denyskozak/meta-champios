@@ -18,8 +18,9 @@ import NextLink from "next/link";
 import clsx from "clsx";
 import { useZKLogin } from "react-sui-zk-login-kit";
 import { useRouter } from "next/navigation";
-import React, {useEffect, useLayoutEffect, useState} from "react";
+import React, { useEffect } from "react";
 import Image from "next/image";
+import { useSuiClientQuery } from "@mysten/dapp-kit";
 
 import { siteConfig } from "@/config/site";
 import { ThemeSwitch } from "@/components/theme-switch";
@@ -30,28 +31,26 @@ import {
   CoinIcon,
 } from "@/components/icons";
 import { convertMistToSui } from "@/utiltiies";
-import {useSuiClientQuery} from "@mysten/dapp-kit";
 
 export const Navbar = () => {
   const { logout, address, client } = useZKLogin();
   const router = useRouter();
 
-
-
-
-
   const { data, refetch } = useSuiClientQuery(
-      'getBalance',
-      { owner: address || '' },
-      {
-        gcTime: 10000,
-      },
+    "getBalance",
+    { owner: address || "" },
+    {
+      gcTime: 10000,
+    },
   );
 
-    useEffect(() => {
-        const intervalId = setInterval(() => refetch(), 2000);
-        return () => { clearInterval(intervalId); };
-    }, []);
+  useEffect(() => {
+    const intervalId = setInterval(() => refetch(), 2000);
+
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
 
   const searchInput = (
     <Input
@@ -139,19 +138,19 @@ export const Navbar = () => {
                 className="text-sm font-normal text-default-600 bg-default-100"
                 variant="flat"
               >
-                  Balance:
+                Balance:
                 <CoinIcon className="text-danger" />
                 {` ${convertMistToSui(data?.totalBalance ? Number(data?.totalBalance) : 0)}`}
               </Button>
             </>
           ) : null}
-            <Button
-                className="text-sm font-normal text-default-600 bg-default-100"
-                variant="flat"
-                onPress={() => router.push("/login")}
-            >
-                {address ? "Profile" : "Sign in"}
-            </Button>
+          <Button
+            className="text-sm font-normal text-default-600 bg-default-100"
+            variant="flat"
+            onPress={() => router.push("/login")}
+          >
+            {address ? "Profile" : "Sign in"}
+          </Button>
         </NavbarItem>
       </NavbarContent>
 
