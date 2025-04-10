@@ -3,10 +3,13 @@ import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
 import { addToast } from "@heroui/react";
 import { useZKLogin } from "react-sui-zk-login-kit";
+import {Checkbox} from "@heroui/react";
 
 import { useTransaction } from "@/app/hooks";
 import { Championship } from "@/types";
 import { convertMistToSui } from "@/utiltiies";
+import Link from "next/link";
+import {useState} from "react";
 
 export const JoinChampionship = ({
   championship,
@@ -17,6 +20,7 @@ export const JoinChampionship = ({
 }) => {
   const { address } = useZKLogin();
   const { joinChampionship } = useTransaction();
+  const [isSelected, setIsSelected] = useState(false);
 
   const teammateFields = Array.from(
     { length: championship.teamSize - 1 },
@@ -49,7 +53,7 @@ export const JoinChampionship = ({
 
         try {
           if (championship.ticketPrice === 0) {
-            await fetch("/api/championships/join", {
+            const response = await fetch("/api/championships/join", {
               method: "POST",
               body: JSON.stringify({
                 championshipId: championship.id,
@@ -62,6 +66,13 @@ export const JoinChampionship = ({
                 "Content-Type": "application/json",
               },
             });
+            
+            if (!response.ok) {
+              const error = await response.json();
+              console.log('error ', error);
+
+              throw new Error(error?.message);
+            }
           } else {
             await joinChampionship(
               championship,
@@ -76,10 +87,10 @@ export const JoinChampionship = ({
             variant: "solid",
           });
           onJoin();
-        } catch (err) {
+        } catch (error) {
           addToast({
             title: "Join Failed",
-            description: "Something went wrong",
+            description: error ? String(error) : "Something went wrong",
             color: "danger",
             variant: "solid",
           });
@@ -118,7 +129,11 @@ export const JoinChampionship = ({
         />
       ))}
 
-      <Button color="primary" type="submit">
+      <Checkbox isSelected={isSelected} onValueChange={setIsSelected}>
+        Read Rules
+      </Checkbox>
+      <Link className="text-red-500" href="/rules" target="_blank">Rules Link</Link>
+      <Button color="primary" disabled={!isSelected} type="submit">
         Join (
         {championship.ticketPrice > 0
           ? `${convertMistToSui(championship.ticketPrice)} Sui`

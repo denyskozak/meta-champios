@@ -25,7 +25,6 @@ const providers = {
 export const Login = () => {
   const { encodedJwt, address, logout, setUserSalt } = useZKLogin();
   const { sendCoins } = useTransaction();
-  const router = useRouter();
 
   useEffect(() => {
     if (encodedJwt) {
@@ -44,7 +43,6 @@ export const Login = () => {
       {/*<Image alt="Logo" height={280} src="/logo_big.png" width={180}/>*/}
 
       <ZKLogin
-        disableRemoveHash
         proverProvider={SUI_PROVER_ENDPOINT}
         providers={providers}
       />

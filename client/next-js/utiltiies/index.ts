@@ -61,6 +61,7 @@ export interface MoveChampionshipGraphQL {
   discord_chat_link: string;
   team_size: string;
   teams_limit: number;
+  winners_amount: number;
   teams: MoveTeam[];
   bracket?: {
     matches: {
@@ -89,6 +90,7 @@ export const mapChampionshipGraphQL = (
     status: Number(item.status),
     teamSize: Number(item.team_size),
     participantsLimit: Number(item.teams_limit),
+    winnersAmount: Number(item.winners_amount),
     discordLink: item.discord_chat_link,
     admin: {
       address: item.admin.address,
@@ -124,6 +126,7 @@ export interface MoveChampionshipRPC {
   discord_chat_link: string;
   team_size: string;
   teams_limit: number;
+  winners_amount: number;
   teams: {
     fields: MoveTeam;
   }[];
@@ -161,6 +164,7 @@ export const mapChampionshipRPC = (item: MoveChampionshipRPC): Championship => {
     teamSize: Number(item.team_size),
     participantsLimit: Number(item.teams_limit),
     discordLink: item.discord_chat_link,
+    winnersAmount: Number(item.winners_amount),
     admin: {
       address: item.admin.fields.address,
       nickname: item.admin.fields.discord_nickname,
