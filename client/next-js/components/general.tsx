@@ -4,11 +4,13 @@ import Image from "next/image";
 import gsap from "gsap";
 import {useGSAP} from "@gsap/react";
 import {Button} from "@heroui/react";
-import Link from "next/link";
+import { Link } from "@heroui/link";
 
 import {title as getTitle, subtitle} from "@/components/primitives";
 import {useAnimation} from "@/app/hooks/useAnimation";
 import {useRouter} from "next/navigation";
+import {siteConfig} from "@/config/site";
+import {DiscordIcon} from "@/components/icons";
 
 // Sui JS SDK
 
@@ -117,11 +119,13 @@ export default function General() {
                     </div>
                 </div>
             </div>
-            <section className="mt-2 flex justify-center items-center  fade-in-animation">
+            <section className="mt-2 flex justify-center items-center flex-col gap-2  fade-in-animation">
                 {/*<div>*/}
                 {/*    <span className={`${getTitle()} fade-in-animation`}>Championships&nbsp;</span>*/}
                 {/*</div>*/}
-
+                <Link isExternal aria-label="Discord" href={siteConfig.links.discord}>
+                    <DiscordIcon size={34} className="text-purple-500" />
+                </Link>
                 <Button
                     size="lg"
                     onPress={() => router.push('/championships')}

@@ -22,6 +22,7 @@ export default function ChampionshipPage({
         radius="lg"
         size="sm"
         variant="solid"
+        className="w-32"
         onPress={() => {
           router.push(`/championships`);
         }}

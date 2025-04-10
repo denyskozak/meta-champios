@@ -43,12 +43,13 @@ export default function ChampionshipPage({
   }, [data]);
 
   return (
-      <div className="flex flex-col gap-4">
+      <div className="flex flex-col">
           <Button
               color="secondary"
               radius="lg"
               size="sm"
               variant="solid"
+              className="w-32"
               onPress={() => {
                   router.push(`/championships/${championship?.gameName}`);
               }}

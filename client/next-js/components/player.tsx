@@ -21,12 +21,15 @@ export const Player = () => {
             window.removeEventListener("click", handleInteraction);
         };
 
-        // Try autoplay (might fail) TODO return it
-        // audio.play().catch((e) => {
-        //     console.log('1 ', e)
-        //     // Wait for user interaction
-        //     window.addEventListener("click", handleInteraction);
-        // });
+        const runMusic = window.localStorage.getItem("music");
+        if (!runMusic) {
+            audio.play().catch((e) => {
+                console.log('1 ', e)
+                // Wait for user interaction
+                window.addEventListener("click", handleInteraction);
+            });
+            window.localStorage.setItem("music", 'true');
+        }
     }, []);
 
     return (

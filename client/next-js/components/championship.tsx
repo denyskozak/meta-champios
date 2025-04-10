@@ -11,6 +11,7 @@ import {CoinIcon} from "@/components/icons";
 import {convertMistToSui, renderJoinButtonText, renderStatus} from "@/utiltiies";
 import {Modal} from "@/components/modal";
 import {JoinChampionship} from "@/components/join-championship";
+import Link from "next/link";
 
 interface IChampionship {
     data: ChampionshipType;
@@ -50,7 +51,7 @@ export function Championship({data, onRefresh}: IChampionship) {
     }, [data.status]);
 
     return (
-        <div className="mb-6 mt-6">
+        <div className="mb-6">
             <div className="flex flex-col gap-4">
                 <h1 className="text-lg font-semibold text-center">Status: {renderStatus(data.status)}</h1>
                 {data.status === 2 ? <h2>Winner Teams: {teamWinners.join(' ,')}</h2> : null}
@@ -72,7 +73,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                     <Button
                         disabled={isInTeam}
                         radius="lg"
-                        size="sm"
+                        size="lg"
                         onPress={() => {
                             if (!address) {
                                 router.push('/login');
@@ -195,7 +196,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                         </TableRow>
                         <TableRow>
                             <TableCell>Discord</TableCell>
-                            <TableCell>{data.discordLink}</TableCell>
+                            <TableCell><Link className="text-red-600" target="_blank" href={data.discordLink}>Link</Link></TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Admin</TableCell>
