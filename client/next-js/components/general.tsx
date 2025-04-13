@@ -78,13 +78,13 @@ export default function General() {
         <div className="inline-block max-w-xl text-center justify-center items-center">
           <div>
             <span className={`${getTitle()} fade-in-animation`}>
-              PLAY&nbsp;
+              WIN&nbsp;
             </span>
 
             <span
               className={`${getTitle({ color: "violet" })} fade-in-animation`}
             >
-              WIN&nbsp;
+              to&nbsp;
             </span>
 
             <span className={`${getTitle()} fade-in-animation`}>EARN</span>

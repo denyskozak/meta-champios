@@ -163,6 +163,7 @@ export default function Championships({ game }: ChampionshipsProps) {
           <Table aria-label="Bracket Table">
             <TableHeader>
               <TableColumn>Name</TableColumn>
+              <TableColumn>Date start</TableColumn>
               <TableColumn>Ticket Price</TableColumn>
               <TableColumn>Status</TableColumn>
               <TableColumn>Team Size</TableColumn>
@@ -176,6 +177,7 @@ export default function Championships({ game }: ChampionshipsProps) {
                 return (
                   <TableRow key={championship.id}>
                     <TableCell> {championship.title}</TableCell>
+                    <TableCell> {championship.dayStart}</TableCell>
                     <TableCell> {renderJoinButtonText(championship)}</TableCell>
                     <TableCell> {renderStatus(championship.status)}</TableCell>
                     <TableCell>

@@ -175,6 +175,7 @@ export const useTransaction = () => {
       discordLink: string,
       discordAdminName: string,
       winnerAmount: string,
+      day_start: string,
     ) {
       const coins = await getUserCoins();
 
@@ -197,6 +198,7 @@ export const useTransaction = () => {
           tx.pure.string(discordLink),
           tx.pure.string(discordAdminName),
           tx.pure.u64(winnerAmount),
+          tx.pure.string(day_start),
           championshipCreateFee,
         ],
       });

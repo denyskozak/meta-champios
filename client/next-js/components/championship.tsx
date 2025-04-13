@@ -292,6 +292,10 @@ export function Championship({ data, onRefresh }: IChampionship) {
               <TableCell>{data.description}</TableCell>
             </TableRow>
             <TableRow>
+              <TableCell>Date Start</TableCell>
+              <TableCell>{data.dayStart}</TableCell>
+            </TableRow>
+            <TableRow>
               <TableCell>Game</TableCell>
               <TableCell>{data.gameName}</TableCell>
             </TableRow>

@@ -16,6 +16,7 @@ export interface Championship {
   title: string;
   description: string;
   gameName: string;
+  dayStart: string;
   ticketPrice: number; // ticket_price
   rewardPool: {
     value: number;

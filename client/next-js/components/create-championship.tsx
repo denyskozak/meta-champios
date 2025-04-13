@@ -32,6 +32,7 @@ export const CreateChampionship = ({
                         discordLink,
                         discordAdminName,
                         winnerAmount,
+                        day_start,
                     } = Object.fromEntries(new FormData(e.currentTarget)) as {
                         title: string;
                         description: string;
@@ -42,6 +43,7 @@ export const CreateChampionship = ({
                         discordLink: string;
                         discordAdminName: string;
                         winnerAmount: string;
+                        day_start: string;
                     };
 
                     if (Number(teamsLimit) % Number(winnerAmount) !== 0) {
@@ -61,7 +63,8 @@ export const CreateChampionship = ({
                         teamsLimit,
                         discordLink,
                         discordAdminName,
-                        winnerAmount
+                        winnerAmount,
+                        day_start,
                     );
                     onSuccess?.();
                     window.dispatchEvent(new Event("update-championships"));
@@ -183,6 +186,17 @@ export const CreateChampionship = ({
                 label="Teams Limit"
                 labelPlacement="outside"
                 name="teamsLimit"
+                placeholder="e.g. 24"
+                type="number"
+            />
+
+            <Input
+                isRequired
+                defaultValue="10/10/2025"
+                errorMessage="Please enter a valid Dat start"
+                label="Day start"
+                labelPlacement="outside"
+                name="day_start"
                 placeholder="e.g. 24"
                 type="number"
             />
