@@ -34,7 +34,7 @@ const objectType = `${PACKAGE_ID}::championship::Championship`;
 async function getChampionships(game: string, after: string) {
   const chainIdentifierQuery = graphql(`
 	query {
-      objects(first: 10, ${after ? "after: $after," : ""} filter: {type: "${objectType}"}) {
+      objects(first: 50, ${after ? "after: $after," : ""} filter: {type: "${objectType}"}) {
         pageInfo {
           hasNextPage
           endCursor
@@ -141,7 +141,7 @@ export default function Championships({ game }: ChampionshipsProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 items-center w-[60vw] h-[60vh]">
+    <div className="flex flex-col gap-4 items-center min-w-[60vw] h-[60vh]">
       <h1>{game}</h1>
       <Select
         className="max-w-xs"
@@ -163,10 +163,12 @@ export default function Championships({ game }: ChampionshipsProps) {
           <Table aria-label="Bracket Table">
             <TableHeader>
               <TableColumn>Name</TableColumn>
+              <TableColumn>Date start</TableColumn>
               <TableColumn>Ticket Price</TableColumn>
               <TableColumn>Status</TableColumn>
               <TableColumn>Team Size</TableColumn>
               <TableColumn>Reward Pool</TableColumn>
+              <TableColumn>Winners amount</TableColumn>
               <TableColumn>Capability</TableColumn>
               <TableColumn>Actions</TableColumn>
             </TableHeader>
@@ -175,6 +177,7 @@ export default function Championships({ game }: ChampionshipsProps) {
                 return (
                   <TableRow key={championship.id}>
                     <TableCell> {championship.title}</TableCell>
+                    <TableCell> {championship.dayStart}</TableCell>
                     <TableCell> {renderJoinButtonText(championship)}</TableCell>
                     <TableCell> {renderStatus(championship.status)}</TableCell>
                     <TableCell>
@@ -184,6 +187,9 @@ export default function Championships({ game }: ChampionshipsProps) {
                     <TableCell>
                       {" "}
                       {convertMistToSui(championship?.rewardPool?.value)}
+                    </TableCell>
+                    <TableCell>
+                      {championship?.winnersAmount}
                     </TableCell>
                     <TableCell>
                       {" "}

@@ -16,6 +16,7 @@ export interface Championship {
   title: string;
   description: string;
   gameName: string;
+  dayStart: string;
   ticketPrice: number; // ticket_price
   rewardPool: {
     value: number;
@@ -23,6 +24,7 @@ export interface Championship {
   status: number; // 0 = Open, 1 = Ongoing, 2 = Closed
   teamSize: number; // team_size
   participantsLimit: number; // teams_limit
+  winnersAmount: number;
   discordLink: string; // discord_chat_link
   admin: {
     address: string;

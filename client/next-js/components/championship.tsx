@@ -50,9 +50,10 @@ export function Championship({ data, onRefresh }: IChampionship) {
   const allMatchesHaveWinner =
     data.bracket?.matches.every((match) => match.winnerLeaderAddress) || false;
   const noMatchesLeft = !(
-    data.bracket?.matches.length === 1 &&
+    data.bracket?.matches.length === data.winnersAmount &&
     data.bracket?.matches?.[0].winnerLeaderAddress
   );
+  const isAdmin = data.admin.address === address;
   const teamWinners = useMemo(() => {
     const winnerAddresses = new Set();
 
@@ -71,6 +72,11 @@ export function Championship({ data, onRefresh }: IChampionship) {
     return winnerTeams;
   }, [data.status]);
 
+  const renderYourTeam = (teamAddress: string) =>
+    teamAddress === address ? (
+      <span className="text-red-500">&nbsp;(You)</span>
+    ) : null;
+
   return (
     <div className="mb-6">
       <div className="flex flex-col gap-4">
@@ -78,9 +84,9 @@ export function Championship({ data, onRefresh }: IChampionship) {
           Status: {renderStatus(data.status)}
         </h1>
         {data.status === 2 ? (
-          <h2>Winner Teams: {teamWinners.join(" ,")}</h2>
+          <h2 className="text-lg font-semibold text-center">Winner Teams: {teamWinners.join(" ,")}</h2>
         ) : null}
-        {data.status === 0 && data.admin.address === address && (
+        {data.status === 0 && data.admin.address === address && data.teams.length === data.participantsLimit && (
           <Button
             color="primary"
             variant="solid"
@@ -121,8 +127,10 @@ export function Championship({ data, onRefresh }: IChampionship) {
         {data.bracket && data.status === 1 && (
           <div className="mt-6 flex gap-6 flex-col">
             <h2 className="text-lg font-semibold">Tournament Bracket</h2>
+            {data.bracket.matches.length === data.winnersAmount && (
+                <h3 className="text-lg font-semibold">Final Round!</h3>)}
             <Table aria-label="Bracket Table">
-              <TableHeader>
+            <TableHeader>
                 <TableColumn>Round</TableColumn>
                 <TableColumn>Team A</TableColumn>
                 <TableColumn>Team B</TableColumn>
@@ -142,10 +150,10 @@ export function Championship({ data, onRefresh }: IChampionship) {
                     <TableRow key={index}>
                       <TableCell>{match.round}</TableCell>
                       <TableCell>
-                        <code className="text-sm">{match.teamA.name}</code>
+                        <code className="text-sm">{match.teamA.name}{renderYourTeam(match.teamA.leaderAddress)}</code>
                       </TableCell>
                       <TableCell>
-                        <code className="text-sm">{match.teamB.name}</code>
+                        <code className="text-sm">{match.teamB.name}{renderYourTeam(match.teamB.leaderAddress)}</code>
                       </TableCell>
                       <TableCell>
                         {match.winnerLeaderAddress ? (
@@ -189,7 +197,7 @@ export function Championship({ data, onRefresh }: IChampionship) {
                 })}
               </TableBody>
             </Table>
-            {noMatchesLeft && (
+            {isAdmin && noMatchesLeft && (
               <Button
                 onPress={async () => {
                   await advanceToNextRound(data.id);
@@ -199,7 +207,7 @@ export function Championship({ data, onRefresh }: IChampionship) {
               </Button>
             )}
 
-            {allMatchesHaveWinner && (
+            {isAdmin && allMatchesHaveWinner && (
               <Button
                 onPress={async () => {
                   await finishChampionship(data.id);
@@ -226,7 +234,7 @@ export function Championship({ data, onRefresh }: IChampionship) {
               <TableBody>
                 {data.teams.map((team) => (
                   <TableRow key={team.leaderAddress}>
-                    <TableCell>{team.name}</TableCell>
+                    <TableCell>{team.name}{renderYourTeam(team.leaderAddress)}</TableCell>
                     <TableCell>{team.leadNickname}</TableCell>
                     <TableCell>{team.leaderAddress}</TableCell>
                     <TableCell>{team.teammateNicknames.join(", ")}</TableCell>
@@ -284,6 +292,10 @@ export function Championship({ data, onRefresh }: IChampionship) {
               <TableCell>{data.description}</TableCell>
             </TableRow>
             <TableRow>
+              <TableCell>Date Start</TableCell>
+              <TableCell>{data.dayStart}</TableCell>
+            </TableRow>
+            <TableRow>
               <TableCell>Game</TableCell>
               <TableCell>{data.gameName}</TableCell>
             </TableRow>
@@ -295,6 +307,12 @@ export function Championship({ data, onRefresh }: IChampionship) {
               <TableCell>Entry Fee</TableCell>
               <TableCell className="flex gap-2">
                 {convertMistToSui(data.ticketPrice)} <CoinIcon />
+              </TableCell>
+            </TableRow>
+            <TableRow>
+              <TableCell>Winners Amount</TableCell>
+              <TableCell>
+                {data.winnersAmount}
               </TableCell>
             </TableRow>
             <TableRow>

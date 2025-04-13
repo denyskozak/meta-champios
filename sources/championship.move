@@ -20,8 +20,7 @@ module meta_wars::championship {
     const ChampionshipOnGoing: u64 = 12;
     const NotAllMatchesComplet: u64 = 13;
     const NoMatchesLeftUseFinish: u64 = 14;
-
-    const FounderAddress: address = @0xe683e99499e137aaa545de0ba866784f7d7ee63fb2227a4c894cdf64d784b386;
+    const WrongWinnerAmount: u64 = 15;
 
     public struct Team has drop, copy, store {
         name: String,
@@ -55,6 +54,7 @@ module meta_wars::championship {
         game_name: String,
 
         ticket_price: u64,
+        winners_amount: u64,
         reward_pool: balance::Balance<SUI>,
 
         admin: Admin,
@@ -69,6 +69,7 @@ module meta_wars::championship {
         bracket: Bracket,
 
         status: u8,
+        day_start: String,
         // 0 = Open, 1 = Ongoing, 2 = Closed
     }
 
@@ -81,15 +82,15 @@ module meta_wars::championship {
         teams_limit: u64,
         discord_chat_link: String,
         admin_discord_nickname: String,
+        winners_amount: u64,
+        day_start: String,
         payment: coin::Coin<SUI>,
         ctx: &mut TxContext,
     ) {
         assert!(
             payment.value() == MIST_PER_SUI * 5,
             UserHasNoEnoughtCoins
-        ); // user need to pay 10 Sui for create, temporary
-
-        transfer::public_transfer(payment, FounderAddress); // send payment for create championship
+        );
 
         let bracket = Bracket {
             matches: vector::empty<Match>(),
@@ -101,19 +102,24 @@ module meta_wars::championship {
             discord_nickname: admin_discord_nickname
         };
 
+        let mut reward_pool = balance::zero<SUI>();
+        coin::put(& mut reward_pool, payment);
+
         let championship = Championship {
             id: object::new(ctx),
             title,
             description,
             game_name: game,
             ticket_price,
-            reward_pool: balance::zero<SUI>(),
+            reward_pool,
             admin,
             discord_chat_link,
             team_size,
             teams_limit,
+            winners_amount,
             teams: vector::empty<Team>(),
             bracket,
+            day_start,
             status: 0
         };
 
@@ -193,9 +199,10 @@ module meta_wars::championship {
 
         let winner_count = vector::length(&winner_addresses);
         assert!(winner_count > 0, NoWinnersError);
+        assert!(winner_count == championship.winners_amount, WrongWinnerAmount);
 
         let total_rewards = championship.reward_pool.value();
-        assert!(total_rewards > 0, EmptyRewardPoolError);
+        // assert!(total_rewards > 0, EmptyRewardPoolError);
 
         let reward_per_winner = total_rewards / winner_count;
 

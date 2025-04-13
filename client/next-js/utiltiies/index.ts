@@ -51,6 +51,7 @@ export interface MoveChampionshipGraphQL {
   description: string;
   game_name: string;
   ticket_price: string;
+  day_start: string;
   reward_pool: {
     value: string;
   };
@@ -61,6 +62,7 @@ export interface MoveChampionshipGraphQL {
   discord_chat_link: string;
   team_size: string;
   teams_limit: number;
+  winners_amount: number;
   teams: MoveTeam[];
   bracket?: {
     matches: {
@@ -82,6 +84,7 @@ export const mapChampionshipGraphQL = (
     title: item.title,
     description: item.description,
     gameName: item.game_name,
+    dayStart: item.day_start,
     ticketPrice: Number(item.ticket_price),
     rewardPool: {
       value: Number(item.reward_pool?.value),
@@ -89,6 +92,7 @@ export const mapChampionshipGraphQL = (
     status: Number(item.status),
     teamSize: Number(item.team_size),
     participantsLimit: Number(item.teams_limit),
+    winnersAmount: Number(item.winners_amount),
     discordLink: item.discord_chat_link,
     admin: {
       address: item.admin.address,
@@ -115,6 +119,7 @@ export interface MoveChampionshipRPC {
   game_name: string;
   ticket_price: string;
   reward_pool: string;
+  day_start: string;
   admin: {
     fields: {
       address: string;
@@ -124,6 +129,7 @@ export interface MoveChampionshipRPC {
   discord_chat_link: string;
   team_size: string;
   teams_limit: number;
+  winners_amount: number;
   teams: {
     fields: MoveTeam;
   }[];
@@ -153,6 +159,7 @@ export const mapChampionshipRPC = (item: MoveChampionshipRPC): Championship => {
     title: item.title,
     description: item.description,
     gameName: item.game_name,
+    dayStart: item.day_start,
     ticketPrice: Number(item.ticket_price),
     rewardPool: {
       value: Number(item.reward_pool),
@@ -161,6 +168,7 @@ export const mapChampionshipRPC = (item: MoveChampionshipRPC): Championship => {
     teamSize: Number(item.team_size),
     participantsLimit: Number(item.teams_limit),
     discordLink: item.discord_chat_link,
+    winnersAmount: Number(item.winners_amount),
     admin: {
       address: item.admin.fields.address,
       nickname: item.admin.fields.discord_nickname,

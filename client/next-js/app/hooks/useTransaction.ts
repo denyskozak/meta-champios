@@ -107,12 +107,12 @@ export const useTransaction = () => {
       console.log("Finish succeeded!");
     },
 
-    async topUpChampionship(championshipId: string, topUpAmount: number) {
-      const tx = new Transaction();
-
-      await handleSignAndExecute(tx);
-      console.log("Top-up succeeded!");
-    },
+    // async topUpChampionship(championshipId: string, topUpAmount: number) {
+    //   const tx = new Transaction();
+    //
+    //   await handleSignAndExecute(tx);
+    //   console.log("Top-up succeeded!");
+    // },
 
     async joinChampionship(
       championship: Championship,
@@ -174,6 +174,8 @@ export const useTransaction = () => {
       joinersLimit: string,
       discordLink: string,
       discordAdminName: string,
+      winnerAmount: string,
+      day_start: string,
     ) {
       const coins = await getUserCoins();
 
@@ -195,6 +197,8 @@ export const useTransaction = () => {
           tx.pure.u64(joinersLimit),
           tx.pure.string(discordLink),
           tx.pure.string(discordAdminName),
+          tx.pure.u64(winnerAmount),
+          tx.pure.string(day_start),
           championshipCreateFee,
         ],
       });

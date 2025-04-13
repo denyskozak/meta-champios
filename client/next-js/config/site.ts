@@ -16,6 +16,11 @@ export const siteConfig = {
       label: "FAQ",
       href: "/faq",
     },
+
+    {
+      label: "Rules",
+      href: "/rules",
+    },
     // {
     //   label: "Pricing",
     //   href: "/pricing",
