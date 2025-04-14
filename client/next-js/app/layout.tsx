@@ -2,6 +2,7 @@ import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
 import clsx from "clsx";
 import React from "react";
+import '@mysten/dapp-kit/dist/index.css';
 
 import { Providers } from "./providers";
 

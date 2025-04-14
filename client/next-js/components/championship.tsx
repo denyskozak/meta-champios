@@ -318,7 +318,7 @@ export function Championship({ data, onRefresh }: IChampionship) {
             <TableRow>
               <TableCell>Reward Pool</TableCell>
               <TableCell className="flex gap-2">
-                {convertMistToSui(data.rewardPool?.value)} <CoinIcon />
+                {convertMistToSui(data.rewardPool?.value / data.winnersAmount)} <CoinIcon />
               </TableCell>
             </TableRow>
             <TableRow>

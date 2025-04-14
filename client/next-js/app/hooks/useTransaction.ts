@@ -1,31 +1,45 @@
 import { Transaction } from "@mysten/sui/transactions";
-import { useZKLogin } from "react-sui-zk-login-kit";
+import {useCurrentAccount, useSignTransaction, useSuiClient} from "@mysten/dapp-kit";
+
 import { bcs } from "@mysten/bcs";
 
-import { PACKAGE_ID } from "@/consts";
+import {NETWORK, PACKAGE_ID} from "@/consts";
 import { Championship } from "@/types";
 import { MIST_PER_SUI } from "@/utiltiies";
 
 export const useTransaction = () => {
-  const { address, client, executeTransaction } = useZKLogin();
+  const { mutateAsync: signTransaction } = useSignTransaction();
+  const account = useCurrentAccount();
+  const client = useSuiClient();
 
   const handleSignAndExecute = async (tx: Transaction) => {
-    if (address) {
-      tx.setSender(address);
+    if (account) {
+      tx.setSender(account.address);
     }
 
     tx.setGasBudget(100000000);
 
-    const digest = await executeTransaction(tx);
+    const { bytes, signature, reportTransactionEffects } = await signTransaction({
+        transaction: tx,
+      chain: `sui:${NETWORK}`,
+    });
 
-    if (!digest) throw new Error("No digest tx");
+    const executeResult = await client.executeTransactionBlock({
+      transactionBlock: bytes,
+      signature,
+      options: {
+        showRawEffects: true,
+      },
+    });
 
-    console.log("result tx digest ", digest);
+    reportTransactionEffects(String(executeResult.rawEffects));
+
+    console.log("result tx digest ", executeResult.digest);
   };
 
   async function getUserCoins() {
     const coins = await client.getCoins({
-      owner: address || "",
+      owner: account?.address || "",
       coinType: "0x2::sui::SUI",
     });
 
@@ -36,9 +50,9 @@ export const useTransaction = () => {
     const txSplit = new Transaction();
     const [gasCoin] = txSplit.splitCoins(txSplit.gas, [MIST_PER_SUI * 0.1]);
 
-    txSplit.transferObjects([gasCoin], address || "");
-    txSplit.setSender(address || "");
-    await executeTransaction(txSplit);
+    txSplit.transferObjects([gasCoin],  account?.address || "");
+    txSplit.setSender( account?.address || "");
+    await handleSignAndExecute(txSplit);
   };
 
   return {
@@ -47,8 +61,8 @@ export const useTransaction = () => {
       const [gasCoin] = txSplit.splitCoins(txSplit.gas, [MIST_PER_SUI * coins]);
 
       txSplit.transferObjects([gasCoin], toAddress || "");
-      txSplit.setSender(address || "");
-      await executeTransaction(txSplit);
+      txSplit.setSender(account?.address || "");
+      await handleSignAndExecute(txSplit);
     },
 
     async startChampionship(championshipId: string) {

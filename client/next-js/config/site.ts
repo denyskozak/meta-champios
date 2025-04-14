@@ -4,12 +4,12 @@ export const siteConfig = {
   name: "MetaWars",
   description: "Make beautiful websites regardless of your design experience.",
   navItems: [
+    // {
+    //   label: "Home",
+    //   href: "/",
+    // },
     {
-      label: "Home",
-      href: "/",
-    },
-    {
-      label: "Championships",
+      label: "Tournaments",
       href: "/championships",
     },
     {

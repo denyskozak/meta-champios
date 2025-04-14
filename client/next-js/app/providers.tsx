@@ -6,14 +6,14 @@ import * as React from "react";
 import { HeroUIProvider } from "@heroui/system";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
+import { WalletProvider } from "@mysten/dapp-kit";
+
 import {
   createNetworkConfig,
   SuiClientProvider,
-  useSuiClient,
 } from "@mysten/dapp-kit";
 import { getFullnodeUrl } from "@mysten/sui/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { ZKLoginProvider } from "react-sui-zk-login-kit";
 // Config options for the networks you want to connect to
 import { ToastProvider } from "@heroui/toast";
 
@@ -37,12 +37,6 @@ declare module "@react-types/shared" {
   }
 }
 
-const SubProviders = ({ children }: { children: React.ReactNode }) => {
-  const suiClient = useSuiClient();
-
-  return <ZKLoginProvider client={suiClient}>{children}</ZKLoginProvider>;
-};
-
 export function Providers({ children, themeProps }: ProvidersProps) {
   const router = useRouter();
 
@@ -51,9 +45,9 @@ export function Providers({ children, themeProps }: ProvidersProps) {
       <ToastProvider />
       <QueryClientProvider client={queryClient}>
         <SuiClientProvider defaultNetwork="testnet" networks={networkConfig}>
-          <SubProviders>
+          <WalletProvider>
             <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
-          </SubProviders>
+          </WalletProvider>
         </SuiClientProvider>
       </QueryClientProvider>
     </HeroUIProvider>

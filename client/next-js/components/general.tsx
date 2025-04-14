@@ -77,17 +77,18 @@ export default function General() {
       <div style={{ textAlign: "center" }}>
         <div className="inline-block max-w-xl text-center justify-center items-center">
           <div>
-            <span className={`${getTitle()} fade-in-animation`}>
-              WIN&nbsp;
+            <span className={`${getTitle({ color: 'cyan'})} fade-in-animation`}>
+              You&nbsp;
             </span>
 
             <span
-              className={`${getTitle({ color: "violet" })} fade-in-animation`}
+              className={`${getTitle({ color: "yellow" })} fade-in-animation`}
             >
-              to&nbsp;
+              Win&nbsp;
             </span>
-
-            <span className={`${getTitle()} fade-in-animation`}>EARN</span>
+            <br />
+            <span className={`${getTitle({ color: 'cyan' })} fade-in-animation`}>We&nbsp;</span>
+            <span className={`${getTitle({ color: "yellow" })} fade-in-animation`}>Pay</span>
 
             {/*<br />*/}
             {/*<span className={`${getTitle()} fade-in-animation`}>*/}
@@ -115,7 +116,7 @@ export default function General() {
               color: "foreground",
             })}
           >
-            Blood, Reward, Fun
+            Next-gen Tournaments Platform
           </div>
         </div>
       </div>
