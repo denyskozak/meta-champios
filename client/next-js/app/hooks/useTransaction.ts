@@ -1,9 +1,12 @@
 import { Transaction } from "@mysten/sui/transactions";
-import {useCurrentAccount, useSignTransaction, useSuiClient} from "@mysten/dapp-kit";
-
+import {
+  useCurrentAccount,
+  useSignTransaction,
+  useSuiClient,
+} from "@mysten/dapp-kit";
 import { bcs } from "@mysten/bcs";
 
-import {NETWORK, PACKAGE_ID} from "@/consts";
+import { NETWORK, PACKAGE_ID } from "@/consts";
 import { Championship } from "@/types";
 import { MIST_PER_SUI } from "@/utiltiies";
 
@@ -19,10 +22,11 @@ export const useTransaction = () => {
 
     tx.setGasBudget(100000000);
 
-    const { bytes, signature, reportTransactionEffects } = await signTransaction({
+    const { bytes, signature, reportTransactionEffects } =
+      await signTransaction({
         transaction: tx,
-      chain: `sui:${NETWORK}`,
-    });
+        chain: `sui:${NETWORK}`,
+      });
 
     const executeResult = await client.executeTransactionBlock({
       transactionBlock: bytes,
@@ -33,8 +37,6 @@ export const useTransaction = () => {
     });
 
     reportTransactionEffects(String(executeResult.rawEffects));
-
-    console.log("result tx digest ", executeResult.digest);
   };
 
   async function getUserCoins() {
@@ -50,8 +52,8 @@ export const useTransaction = () => {
     const txSplit = new Transaction();
     const [gasCoin] = txSplit.splitCoins(txSplit.gas, [MIST_PER_SUI * 0.1]);
 
-    txSplit.transferObjects([gasCoin],  account?.address || "");
-    txSplit.setSender( account?.address || "");
+    txSplit.transferObjects([gasCoin], account?.address || "");
+    txSplit.setSender(account?.address || "");
     await handleSignAndExecute(txSplit);
   };
 

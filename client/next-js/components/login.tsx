@@ -1,102 +1,64 @@
 "use client";
-import { useZKLogin, ZKLogin } from "react-sui-zk-login-kit";
-import React, { useEffect } from "react";
-import { generateRandomness } from "@mysten/sui/zklogin";
-import { useRouter } from "next/navigation";
+import React from "react";
 import { Form, Input, Button, Card } from "@heroui/react";
 import { CardHeader } from "@heroui/card";
+import { useDisconnectWallet } from "@mysten/dapp-kit";
 
 import { useTransaction } from "@/app/hooks";
 
-const SUI_PROVER_ENDPOINT = "https://prover-dev.mystenlabs.com/v1";
-
-// values can be stored in .env
-const providers = {
-  google: {
-    clientId: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || "",
-    redirectURI: process.env.NEXT_PUBLIC_GOOGLE_REDIRECT_URL || "",
-  },
-  twitch: {
-    clientId: process.env.NEXT_PUBLIC_TWITCH_CLIENT_ID || "",
-    redirectURI: process.env.NEXT_PUBLIC_TWITCH_REDIRECT_URL || "",
-  },
-};
-
 export const Login = () => {
-  const { encodedJwt, address, logout, setUserSalt } = useZKLogin();
   const { sendCoins } = useTransaction();
-
-  useEffect(() => {
-    if (encodedJwt) {
-      // make you request to your server
-      // for recive useSalt by jwt.iss (issuer id)
-      const requestMock = new Promise((resolve): void =>
-        resolve(localStorage.getItem("userSalt") || generateRandomness()),
-      );
-
-      requestMock.then((salt) => setUserSalt(String(salt)));
-    }
-  }, [encodedJwt]);
+  const { mutate: disconnect } = useDisconnectWallet();
 
   return (
     <div className="flex justify-center flex-col gap-8 items-center">
       {/*<Image alt="Logo" height={280} src="/logo_big.png" width={180}/>*/}
 
-      <ZKLogin
-        proverProvider={SUI_PROVER_ENDPOINT}
-        providers={providers}
-      />
-      {address ? (
-        <Card className="p-4 gap-2">
-          <CardHeader>
-            <p className="text-md">Withdraw Coins to Your Account</p>
-          </CardHeader>
-          <Form
-            className="w-full max-w-xs flex flex-col gap-4"
-            onSubmit={(e) => {
-              e.preventDefault();
-              let data = Object.fromEntries(new FormData(e.currentTarget)) as {
-                address: string;
-                coins: string;
-              };
+      <Card className="p-4 gap-2">
+        <CardHeader>
+          <p className="text-md">Withdraw Coins to Your Account</p>
+        </CardHeader>
+        <Form
+          className="w-full max-w-xs flex flex-col gap-4"
+          onSubmit={(e) => {
+            e.preventDefault();
+            let data = Object.fromEntries(new FormData(e.currentTarget)) as {
+              address: string;
+              coins: string;
+            };
 
-              sendCoins(data.address, Number(data.coins));
-            }}
-          >
-            <Input
-              isRequired
-              errorMessage="Please enter your valid address"
-              label="Address"
-              labelPlacement="outside"
-              name="address"
-              placeholder="Enter your address"
-              type="text"
-            />
+            sendCoins(data.address, Number(data.coins));
+          }}
+        >
+          <Input
+            isRequired
+            errorMessage="Please enter your valid address"
+            label="Address"
+            labelPlacement="outside"
+            name="address"
+            placeholder="Enter your address"
+            type="text"
+          />
 
-            <Input
-              isRequired
-              errorMessage="Please enter a valid amount"
-              label="Coins"
-              labelPlacement="outside"
-              name="coins"
-              placeholder="Enter amount of coins"
-              type="number"
-            />
-            <div className="flex gap-2">
-              <Button color="primary" type="submit">
-                Withdraw
-              </Button>
-            </div>
-          </Form>
-          <Button
-            className="text-sm font-normal text-default-600 bg-default-100"
-            variant="flat"
-            onPress={() => logout()}
-          >
-            Logout
-          </Button>
-        </Card>
-      ) : null}
+          <Input
+            isRequired
+            errorMessage="Please enter a valid amount"
+            label="Coins"
+            labelPlacement="outside"
+            name="coins"
+            placeholder="Enter amount of coins"
+            type="number"
+          />
+          <div className="flex gap-2">
+            <Button color="primary" type="submit">
+              Withdraw
+            </Button>
+          </div>
+        </Form>
+        <Button color="primary" onPress={() => disconnect()}>
+          Logout
+        </Button>
+      </Card>
     </div>
   );
 };

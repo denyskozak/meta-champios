@@ -77,7 +77,9 @@ export default function General() {
       <div style={{ textAlign: "center" }}>
         <div className="inline-block max-w-xl text-center justify-center items-center">
           <div>
-            <span className={`${getTitle({ color: 'cyan'})} fade-in-animation`}>
+            <span
+              className={`${getTitle({ color: "cyan" })} fade-in-animation`}
+            >
               You&nbsp;
             </span>
 
@@ -87,8 +89,16 @@ export default function General() {
               Win&nbsp;
             </span>
             <br />
-            <span className={`${getTitle({ color: 'cyan' })} fade-in-animation`}>We&nbsp;</span>
-            <span className={`${getTitle({ color: "yellow" })} fade-in-animation`}>Pay</span>
+            <span
+              className={`${getTitle({ color: "cyan" })} fade-in-animation`}
+            >
+              We&nbsp;
+            </span>
+            <span
+              className={`${getTitle({ color: "yellow" })} fade-in-animation`}
+            >
+              Pay
+            </span>
 
             {/*<br />*/}
             {/*<span className={`${getTitle()} fade-in-animation`}>*/}

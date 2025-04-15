@@ -3,6 +3,7 @@ module meta_wars::championship {
     use sui::balance;
     use sui::coin;
     use sui::sui::{SUI};
+    use sui::url::Url;
 
     const MIST_PER_SUI: u64 = 1_000_000_000;
 
@@ -27,6 +28,12 @@ module meta_wars::championship {
         leader_address: address,
         lead_nickname: String,
         teammate_nicknames: vector<String>,
+    }
+
+    public struct Sponsor has drop, copy, store {
+        address: address,
+        banner_image_urls: vector<String>,
+        amount: u64,
     }
 
     /// Одна игра в сетке турнира
@@ -67,7 +74,7 @@ module meta_wars::championship {
         teams_limit: u64,
         teams: vector<Team>,
         bracket: Bracket,
-
+        sponsors: vector<Sponsor>,
         status: u8,
         day_start: String,
         // 0 = Open, 1 = Ongoing, 2 = Closed
@@ -117,6 +124,7 @@ module meta_wars::championship {
             team_size,
             teams_limit,
             winners_amount,
+            sponsors: vector::empty<Sponsor>(),
             teams: vector::empty<Team>(),
             bracket,
             day_start,
@@ -316,5 +324,26 @@ module meta_wars::championship {
 
         bracket.matches = next_round;
         bracket.current_round = bracket.current_round + 1;
+    }
+
+    public fun add_sponsor(
+        championship: &mut Championship,
+        banner_image_urls: vector<String>,
+        payment: coin::Coin<SUI>,
+        ctx: &mut TxContext
+    ) {
+        let amount = payment.value();
+        assert!(amount > MIST_PER_SUI * 10, UserHasNoEnoughtCoins);
+
+        // Добавляем монеты в пул наград
+        coin::put(&mut championship.reward_pool, payment);
+
+        // Добавляем запись о спонсоре
+        let sponsor = Sponsor {
+            address: ctx.sender(),
+            banner_image_urls,
+            amount,
+        };
+        vector::push_back(&mut championship.sponsors, sponsor);
     }
 }

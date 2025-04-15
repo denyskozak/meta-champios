@@ -1,7 +1,6 @@
 "use client";
 import React, { useMemo, useState } from "react";
-import { useZKLogin } from "react-sui-zk-login-kit";
-import { Button } from "@heroui/button";
+import { Button } from "@heroui/react";
 import {
   Progress,
   Table,
@@ -10,9 +9,11 @@ import {
   TableColumn,
   TableRow,
   TableCell,
+  addToast,
 } from "@heroui/react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useCurrentAccount } from "@mysten/dapp-kit";
 
 import { useTransaction } from "@/app/hooks";
 import { Championship as ChampionshipType } from "@/types";
@@ -31,7 +32,8 @@ interface IChampionship {
 }
 
 export function Championship({ data, onRefresh }: IChampionship) {
-  const { address } = useZKLogin();
+  const account = useCurrentAccount();
+  const address = account?.address;
   const router = useRouter();
   const {
     startChampionship,
@@ -84,37 +86,48 @@ export function Championship({ data, onRefresh }: IChampionship) {
           Status: {renderStatus(data.status)}
         </h1>
         {data.status === 2 ? (
-          <h2 className="text-lg font-semibold text-center">Winner Teams: {teamWinners.join(" ,")}</h2>
+          <h2 className="text-lg font-semibold text-center">
+            Winner Teams: {teamWinners.join(" ,")}
+          </h2>
         ) : null}
-        {data.status === 0 && data.admin.address === address && data.teams.length === data.participantsLimit && (
-          <Button
-            color="primary"
-            variant="solid"
-            onPress={async () => {
-              await startChampionship(data.id);
-              onRefresh();
-            }}
-          >
-            Start it!
-          </Button>
-        )}
+        {data.status === 0 &&
+          data.admin.address === address &&
+          data.teams.length === data.participantsLimit && (
+            <Button
+              color="primary"
+              variant="solid"
+              onPress={async () => {
+                await startChampionship(data.id);
+                onRefresh();
+              }}
+            >
+              Start it!
+            </Button>
+          )}
 
         {data.status === 0 && (
           <Button
             className=" shadow-lg overflow-hidden group "
-            disabled={isInTeam}
+            disabled={Boolean(isInTeam)}
             radius="lg"
             size="lg"
             onPress={() => {
               if (!address) {
-                router.push("/login");
+                addToast({
+                  title: "SignIn required",
+                  description: "Use Connect button (top right)",
+                  color: "warning",
+                  variant: "solid",
+                });
 
                 return;
               }
               setJoinModalVisible(true);
             }}
           >
-            <span className="absolute inset-0 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 animate-pulse opacity-100 group-hover:opacity-100 blur-md" />
+            {!isInTeam && (
+              <span className="absolute inset-0 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 animate-pulse opacity-100 group-hover:opacity-100 blur-md" />
+            )}
             <span className="relative z-10">
               {" "}
               {isInTeam
@@ -128,9 +141,10 @@ export function Championship({ data, onRefresh }: IChampionship) {
           <div className="mt-6 flex gap-6 flex-col">
             <h2 className="text-lg font-semibold">Tournament Bracket</h2>
             {data.bracket.matches.length === data.winnersAmount && (
-                <h3 className="text-lg font-semibold">Final Round!</h3>)}
+              <h3 className="text-lg font-semibold">Final Round!</h3>
+            )}
             <Table aria-label="Bracket Table">
-            <TableHeader>
+              <TableHeader>
                 <TableColumn>Round</TableColumn>
                 <TableColumn>Team A</TableColumn>
                 <TableColumn>Team B</TableColumn>
@@ -150,10 +164,16 @@ export function Championship({ data, onRefresh }: IChampionship) {
                     <TableRow key={index}>
                       <TableCell>{match.round}</TableCell>
                       <TableCell>
-                        <code className="text-sm">{match.teamA.name}{renderYourTeam(match.teamA.leaderAddress)}</code>
+                        <code className="text-sm">
+                          {match.teamA.name}
+                          {renderYourTeam(match.teamA.leaderAddress)}
+                        </code>
                       </TableCell>
                       <TableCell>
-                        <code className="text-sm">{match.teamB.name}{renderYourTeam(match.teamB.leaderAddress)}</code>
+                        <code className="text-sm">
+                          {match.teamB.name}
+                          {renderYourTeam(match.teamB.leaderAddress)}
+                        </code>
                       </TableCell>
                       <TableCell>
                         {match.winnerLeaderAddress ? (
@@ -234,7 +254,10 @@ export function Championship({ data, onRefresh }: IChampionship) {
               <TableBody>
                 {data.teams.map((team) => (
                   <TableRow key={team.leaderAddress}>
-                    <TableCell>{team.name}{renderYourTeam(team.leaderAddress)}</TableCell>
+                    <TableCell>
+                      {team.name}
+                      {renderYourTeam(team.leaderAddress)}
+                    </TableCell>
                     <TableCell>{team.leadNickname}</TableCell>
                     <TableCell>{team.leaderAddress}</TableCell>
                     <TableCell>{team.teammateNicknames.join(", ")}</TableCell>
@@ -311,14 +334,13 @@ export function Championship({ data, onRefresh }: IChampionship) {
             </TableRow>
             <TableRow>
               <TableCell>Winners Amount</TableCell>
-              <TableCell>
-                {data.winnersAmount}
-              </TableCell>
+              <TableCell>{data.winnersAmount}</TableCell>
             </TableRow>
             <TableRow>
               <TableCell>Reward Pool</TableCell>
               <TableCell className="flex gap-2">
-                {convertMistToSui(data.rewardPool?.value / data.winnersAmount)} <CoinIcon />
+                {convertMistToSui(data.rewardPool?.value / data.winnersAmount)}{" "}
+                <CoinIcon />
               </TableCell>
             </TableRow>
             <TableRow>

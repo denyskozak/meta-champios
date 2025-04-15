@@ -2,14 +2,14 @@ import { Form } from "@heroui/form";
 import { Input } from "@heroui/input";
 import { Button } from "@heroui/button";
 import { addToast } from "@heroui/react";
-import { useZKLogin } from "react-sui-zk-login-kit";
-import {Checkbox} from "@heroui/react";
+import { Checkbox } from "@heroui/react";
+import Link from "next/link";
+import { useState } from "react";
+import { useCurrentAccount } from "@mysten/dapp-kit";
 
 import { useTransaction } from "@/app/hooks";
 import { Championship } from "@/types";
 import { convertMistToSui } from "@/utiltiies";
-import Link from "next/link";
-import {useState} from "react";
 
 export const JoinChampionship = ({
   championship,
@@ -18,20 +18,41 @@ export const JoinChampionship = ({
   championship: Championship;
   onJoin: () => void;
 }) => {
-  const { address } = useZKLogin();
+  const account = useCurrentAccount();
   const { joinChampionship } = useTransaction();
-  const [isSelected, setIsSelected] = useState(false);
+  const [isRulesSelected, setIsSelected] = useState(false);
+  const [isInvalidRules, setIsInvalidRules] = useState(false);
+  const [userJoinder, setUserJoinder] = useState(false);
 
   const teammateFields = Array.from(
     { length: championship.teamSize - 1 },
     (_, i) => i,
   );
 
+  if (userJoinder) {
+    return (
+      <div>
+        <h1>Your team registered!</h1>
+      </div>
+    );
+  }
+
   return (
     <Form
       className="w-full max-w-xs flex flex-col gap-4 justify-center items-center"
       onSubmit={async (e) => {
         e.preventDefault();
+        if (!isRulesSelected) {
+          addToast({
+            title: `Accept Rules`,
+            color: "primary",
+            variant: "solid",
+            severity: "warning",
+          });
+          setIsInvalidRules(true);
+
+          return;
+        }
         const formData = new FormData(e.currentTarget);
         const teamName = formData.get("teamName") as string;
         const leadNickname = formData.get("leadNickname") as string;
@@ -57,7 +78,7 @@ export const JoinChampionship = ({
               method: "POST",
               body: JSON.stringify({
                 championshipId: championship.id,
-                leaderAddress: address,
+                leaderAddress: account?.address,
                 teamName,
                 leadNickname,
                 teammateNicknames,
@@ -66,12 +87,15 @@ export const JoinChampionship = ({
                 "Content-Type": "application/json",
               },
             });
-            
+
             if (!response.ok) {
               const error = await response.json();
-              console.log('error ', error);
+
+              console.log("error ", error);
 
               throw new Error(error?.message);
+            } else {
+              setUserJoinder(true);
             }
           } else {
             await joinChampionship(
@@ -129,11 +153,20 @@ export const JoinChampionship = ({
         />
       ))}
 
-      <Checkbox isSelected={isSelected} onValueChange={setIsSelected}>
+      <Checkbox
+        isInvalid={isInvalidRules}
+        isSelected={isRulesSelected}
+        onValueChange={() => {
+          setIsInvalidRules(false);
+          setIsSelected((state) => !state);
+        }}
+      >
         Read Rules
       </Checkbox>
-      <Link className="text-red-500" href="/rules" target="_blank">Rules Link</Link>
-      <Button color="primary" disabled={!isSelected} type="submit">
+      <Link className="text-red-500" href="/rules" target="_blank">
+        Rules Link
+      </Link>
+      <Button color="primary" type="submit">
         Join (
         {championship.ticketPrice > 0
           ? `${convertMistToSui(championship.ticketPrice)} Sui`

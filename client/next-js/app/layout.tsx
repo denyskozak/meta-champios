@@ -2,7 +2,7 @@ import "@/styles/globals.css";
 import { Metadata, Viewport } from "next";
 import clsx from "clsx";
 import React from "react";
-import '@mysten/dapp-kit/dist/index.css';
+import "@mysten/dapp-kit/dist/index.css";
 
 import { Providers } from "./providers";
 
@@ -58,7 +58,7 @@ export default function RootLayout({
                 Your browser does not support the video tag.
               </video>
 
-              <main className="z-[1] flex justify-center items-center w-full h-full">
+              <main className="z-[1] flex justify-center items-center w-full h-full overflow-y-scroll pt-16 pb-16">
                 {children}
               </main>
 

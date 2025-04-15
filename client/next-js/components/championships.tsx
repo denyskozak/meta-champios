@@ -34,7 +34,7 @@ const objectType = `${PACKAGE_ID}::championship::Championship`;
 async function getChampionships(game: string, after: string) {
   const chainIdentifierQuery = graphql(`
 	query {
-      objects(first: 50, ${after ? "after: $after," : ""} filter: {type: "${objectType}"}) {
+      objects(first: 10, ${after ? "after: $after," : ""} filter: {type: "${objectType}"}) {
         pageInfo {
           hasNextPage
           endCursor
@@ -70,7 +70,7 @@ let storeChampionships: Championship[] = [];
 
 export default function Championships({ game }: ChampionshipsProps) {
   const router = useRouter();
-  const [status, setStatus] = React.useState(0);
+  const [status, setStatus] = React.useState(-1);
   const [pagination, setPagination] = useState({
     page: 1,
     hasNextPage: false,
@@ -107,9 +107,11 @@ export default function Championships({ game }: ChampionshipsProps) {
 
       storeChampionships = items.map(mapChampionshipGraphQL);
       setChampionships(
-        storeChampionships.filter(
-          (item: Championship) => item.status === status,
-        ),
+        status === -1
+          ? storeChampionships
+          : storeChampionships.filter(
+              (item: Championship) => item.status === status,
+            ),
       );
     };
 
@@ -124,7 +126,11 @@ export default function Championships({ game }: ChampionshipsProps) {
   console.log("championships ", championships);
   useEffect(() => {
     setChampionships(
-      storeChampionships.filter((item: Championship) => item.status === status),
+      status === -1
+        ? storeChampionships
+        : storeChampionships.filter(
+            (item: Championship) => item.status === status,
+          ),
     );
   }, [status]);
 
@@ -141,11 +147,11 @@ export default function Championships({ game }: ChampionshipsProps) {
   };
 
   return (
-    <div className="flex flex-col gap-4 items-center min-w-[60vw] h-[60vh]">
+    <div className="flex flex-col gap-4 items-center min-w-[60vw] h-[60vh] overflow-y-scroll">
       <h1>{game}</h1>
       <Select
         className="max-w-xs"
-        defaultSelectedKeys={["0"]}
+        defaultSelectedKeys={["-1"]}
         label="Status"
         name="status"
         placeholder="Select a status"
@@ -153,6 +159,7 @@ export default function Championships({ game }: ChampionshipsProps) {
           setStatus(Number(e.target.value));
         }}
       >
+        <SelectItem key={-1}>All</SelectItem>
         <SelectItem key={0}>Open</SelectItem>
         <SelectItem key={1}>On Going</SelectItem>
         <SelectItem key={2}>Finished</SelectItem>
@@ -188,9 +195,7 @@ export default function Championships({ game }: ChampionshipsProps) {
                       {" "}
                       {convertMistToSui(championship?.rewardPool?.value)}
                     </TableCell>
-                    <TableCell>
-                      {championship?.winnersAmount}
-                    </TableCell>
+                    <TableCell>{championship?.winnersAmount}</TableCell>
                     <TableCell>
                       {" "}
                       {championship.participantsLimit} /{" "}

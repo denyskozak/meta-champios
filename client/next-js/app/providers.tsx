@@ -7,11 +7,7 @@ import { HeroUIProvider } from "@heroui/system";
 import { useRouter } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import { WalletProvider } from "@mysten/dapp-kit";
-
-import {
-  createNetworkConfig,
-  SuiClientProvider,
-} from "@mysten/dapp-kit";
+import { createNetworkConfig, SuiClientProvider } from "@mysten/dapp-kit";
 import { getFullnodeUrl } from "@mysten/sui/client";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 // Config options for the networks you want to connect to

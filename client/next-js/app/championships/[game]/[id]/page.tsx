@@ -38,6 +38,7 @@ export default function ChampionshipPage({
     ) {
       const { fields } = data.data.content;
 
+      console.log("fields ", fields);
       setChampionship(mapChampionshipRPC(fields as any));
     }
   }, [data]);
