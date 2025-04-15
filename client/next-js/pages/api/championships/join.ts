@@ -95,7 +95,7 @@ const POST = async (
       return;
     }
     const championshipData = mapChampionshipRPC(
-      championship?.data?.content?.fields,
+      championship?.data?.content?.fields as any,
     );
 
     const teamNicknamesSafe = Array.isArray(teammateNicknames)
