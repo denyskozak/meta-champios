@@ -25,7 +25,8 @@ module.exports = {
       },
       dark: {
         colors: {
-          secondary: '#00b7fa', // Replace with your desired color
+          primary:  '#00b7fa', // Replace with your desired color
+          secondary: '#953B51', // Replace with your desired color
         },
       },
     },

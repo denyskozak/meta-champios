@@ -212,6 +212,8 @@ export default function Championships({game}: ChampionshipsProps) {
                                                 </TableCell>
                                                 <TableCell>
                                                     <Button
+                                                        variant="solid"
+                                                        color="primary"
                                                         onPress={() => {
                                                             router.push(
                                                                 `/championships/${game}/${championship.id}`,
