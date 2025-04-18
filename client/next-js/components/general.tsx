@@ -135,7 +135,7 @@ export default function General() {
         {/*    <span className={`${getTitle()} fade-in-animation`}>Championships&nbsp;</span>*/}
         {/*</div>*/}
         <Link isExternal aria-label="Discord" href={siteConfig.links.discord}>
-          <DiscordIcon className="text-purple-500" size={34} />
+          <DiscordIcon className="text-[#FFB457]" size={36} />
         </Link>
         <Button
           className=" shadow-lg overflow-hidden group "
