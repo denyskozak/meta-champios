@@ -80,24 +80,24 @@ export default function General() {
             <span
               className={`${getTitle({ color: "cyan" })} fade-in-animation`}
             >
-              You&nbsp;
+              Win&nbsp;
             </span>
 
             <span
               className={`${getTitle({ color: "yellow" })} fade-in-animation`}
             >
-              Win&nbsp;
+              Tournaments&nbsp;
             </span>
             <br />
             <span
               className={`${getTitle({ color: "cyan" })} fade-in-animation`}
             >
-              We&nbsp;
+              Earn&nbsp;
             </span>
             <span
               className={`${getTitle({ color: "yellow" })} fade-in-animation`}
             >
-              Pay
+              Crypto
             </span>
 
             {/*<br />*/}
@@ -126,7 +126,7 @@ export default function General() {
               color: "foreground",
             })}
           >
-            Next-gen Tournaments Platform
+            Next-gen Platform Rewards For Skills
           </div>
         </div>
       </div>

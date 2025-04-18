@@ -33,6 +33,8 @@ declare module "@react-types/shared" {
   }
 }
 
+const stashConfig = NETWORK !== 'devnet' ? { network: NETWORK, name: "Meta Wars Tournaments" } : undefined;
+
 export function Providers({ children, themeProps }: ProvidersProps) {
   const router = useRouter();
 
@@ -41,7 +43,7 @@ export function Providers({ children, themeProps }: ProvidersProps) {
       <ToastProvider />
       <QueryClientProvider client={queryClient}>
         <SuiClientProvider defaultNetwork="testnet" networks={networkConfig}>
-          <WalletProvider>
+          <WalletProvider stashedWallet={stashConfig}>
             <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>
           </WalletProvider>
         </SuiClientProvider>

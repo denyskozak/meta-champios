@@ -6,7 +6,7 @@ import { CreateChampionship } from "@/components/create-championship";
 
 export default function CreateChampionshipPage() {
   return (
-    <div>
+    <div className="h-full">
       <CreateChampionship />
     </div>
   );

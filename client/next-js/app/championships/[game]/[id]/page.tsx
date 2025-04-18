@@ -44,11 +44,11 @@ export default function ChampionshipPage({
   }, [data]);
 
   return (
-    <div className="flex flex-col">
+    <div className="flex flex-col h-full pt-4">
       <Button
-        className="w-32"
+          className="mb-4"
         color="secondary"
-        radius="lg"
+        radius="sm"
         size="sm"
         variant="solid"
         onPress={() => {

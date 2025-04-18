@@ -1,4 +1,4 @@
-import { Transaction } from "@mysten/sui/transactions";
+import { Transaction, coinWithBalance } from "@mysten/sui/transactions";
 import {
   useCurrentAccount,
   useSignTransaction,
@@ -37,6 +37,7 @@ export const useTransaction = () => {
     });
 
     reportTransactionEffects(String(executeResult.rawEffects));
+    console.log('executeResult ', executeResult.digest)
   };
 
   async function getUserCoins() {
@@ -74,6 +75,21 @@ export const useTransaction = () => {
       tx.moveCall({
         target: `${PACKAGE_ID}::championship::start_championship`,
         arguments: [champ],
+      });
+
+      await handleSignAndExecute(tx);
+    },
+
+    async addSponsor(championshipId: string, title: string, amount: string) {
+      const tx = new Transaction();
+
+      tx.moveCall({
+        target: `${PACKAGE_ID}::championship::add_sponsor`,
+        arguments: [
+          tx.object(championshipId),
+          tx.pure.string(title),
+          coinWithBalance({ balance: Number(amount) * MIST_PER_SUI })
+        ],
       });
 
       await handleSignAndExecute(tx);

@@ -16,7 +16,7 @@ export default function ChampionshipPage({
   const router = useRouter();
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col gap-4 h-full">
       <Button
         className="w-32"
         color="secondary"

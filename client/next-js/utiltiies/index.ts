@@ -1,4 +1,4 @@
-import { Championship as ChampionshipType, Championship, Team } from "@/types";
+import {Championship as ChampionshipType, Championship, Sponsor, Team} from "@/types";
 
 export const MIST_PER_SUI = 1000000000;
 
@@ -38,11 +38,24 @@ interface MoveTeam {
   teammate_nicknames: string[];
 }
 
+interface MoveSponsor {
+  address: string;
+  title: string;
+  amount: string;
+}
+
 const mapTeam = (team: MoveTeam): Team => ({
   name: team.name,
   leaderAddress: team.leader_address,
   leadNickname: team.lead_nickname,
   teammateNicknames: team.teammate_nicknames,
+});
+
+
+const mapSponsor = (sponsor: MoveSponsor): Sponsor => ({
+  address: sponsor.address,
+  title: sponsor.title,
+  amount: Number(sponsor.amount),
 });
 
 export interface MoveChampionshipGraphQL {
@@ -64,6 +77,7 @@ export interface MoveChampionshipGraphQL {
   teams_limit: number;
   winners_amount: number;
   teams: MoveTeam[];
+  sponsors: MoveSponsor[];
   bracket?: {
     matches: {
       team_a: MoveTeam;
@@ -99,6 +113,7 @@ export const mapChampionshipGraphQL = (
       nickname: item.admin.discord_nickname,
     },
     teams: item.teams.map(mapTeam),
+    sponsors: item.sponsors.map(mapSponsor),
     bracket: item.bracket
       ? {
           currentRound: Number(item.bracket.current_round),
@@ -112,6 +127,7 @@ export const mapChampionshipGraphQL = (
       : undefined,
   };
 };
+
 export interface MoveChampionshipRPC {
   id: { id: string };
   title: string;
@@ -132,6 +148,9 @@ export interface MoveChampionshipRPC {
   winners_amount: number;
   teams: {
     fields: MoveTeam;
+  }[];
+  sponsors: {
+    fields: MoveSponsor;
   }[];
   bracket?: {
     fields: {
@@ -174,6 +193,7 @@ export const mapChampionshipRPC = (item: MoveChampionshipRPC): Championship => {
       nickname: item.admin.fields.discord_nickname,
     },
     teams: item.teams.map(({ fields }) => mapTeam(fields)),
+    sponsors: item.sponsors.map(({ fields }) => mapSponsor(fields)),
     bracket: item.bracket
       ? {
           currentRound: Number(item.bracket.fields.current_round),

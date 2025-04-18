@@ -32,7 +32,7 @@ module meta_wars::championship {
 
     public struct Sponsor has drop, copy, store {
         address: address,
-        banner_image_urls: vector<String>,
+        title: String,
         amount: u64,
     }
 
@@ -328,12 +328,12 @@ module meta_wars::championship {
 
     public fun add_sponsor(
         championship: &mut Championship,
-        banner_image_urls: vector<String>,
+        title: String,
         payment: coin::Coin<SUI>,
         ctx: &mut TxContext
     ) {
         let amount = payment.value();
-        assert!(amount > MIST_PER_SUI * 10, UserHasNoEnoughtCoins);
+        assert!(amount > MIST_PER_SUI * 9, UserHasNoEnoughtCoins);
 
         // Добавляем монеты в пул наград
         coin::put(&mut championship.reward_pool, payment);
@@ -341,7 +341,7 @@ module meta_wars::championship {
         // Добавляем запись о спонсоре
         let sponsor = Sponsor {
             address: ctx.sender(),
-            banner_image_urls,
+            title,
             amount,
         };
         vector::push_back(&mut championship.sponsors, sponsor);

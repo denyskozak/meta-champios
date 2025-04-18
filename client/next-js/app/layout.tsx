@@ -9,7 +9,6 @@ import { Providers } from "./providers";
 import { siteConfig } from "@/config/site";
 import { fontSans } from "@/config/fonts";
 import { Navbar } from "@/components/navbar";
-import { Player } from "@/components/player";
 
 export const metadata: Metadata = {
   title: {
@@ -58,7 +57,7 @@ export default function RootLayout({
                 Your browser does not support the video tag.
               </video>
 
-              <main className="z-[1] flex justify-center items-center w-full h-full overflow-y-scroll pt-16 pb-16">
+              <main className="z-[1] flex justify-center items-center w-full h-full overflow-y-scroll">
                 {children}
               </main>
 
@@ -73,10 +72,6 @@ export default function RootLayout({
               {/*    <p className="text-primary">HeroUI</p>*/}
               {/*  </Link>*/}
               {/*</footer>*/}
-            </div>
-
-            <div className="fixed w-54 bottom-1 right-1 z-[2]">
-              <Player />
             </div>
           </div>
         </Providers>

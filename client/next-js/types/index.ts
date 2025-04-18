@@ -11,6 +11,12 @@ export interface Team {
   teammateNicknames: string[];
 }
 
+export interface Sponsor {
+  address: string;
+  title: string;
+  amount: number;
+}
+
 export interface Championship {
   id: string;
   title: string;
@@ -31,6 +37,7 @@ export interface Championship {
     nickname: string;
   };
   teams: Team[];
+  sponsors: Sponsor[];
   bracket?: {
     currentRound: number;
     matches: {
