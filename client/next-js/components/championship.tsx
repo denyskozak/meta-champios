@@ -26,7 +26,7 @@ import {
 import {Modal} from "@/components/modal";
 import {JoinChampionship} from "@/components/join-championship";
 import {AddSponsor} from "@/components/add-sponsor";
-import {CountdownTimer} from "@/components/back-tracking";
+import {CountdownTimer} from "@/components/countdown-timer";
 
 interface IChampionship {
     data: ChampionshipType;
