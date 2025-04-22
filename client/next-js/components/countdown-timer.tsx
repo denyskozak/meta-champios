@@ -40,10 +40,10 @@ export const CountdownTimer = ({ date }: ICountdownTimer) => {
 
     return (
         <div style={{ fontFamily: 'sans-serif', textAlign: 'center' }}>
-            <span>Until {targetDate.toLocaleDateString()} left:</span>
+            <span>{targetDate.toLocaleDateString()}</span>
             <br />
-            <span style={{ fontSize: '1.5rem' }}>
-                {timeLeft.days}d : {timeLeft.hours}h : {timeLeft.minutes}m : {timeLeft.seconds}s
+            <span>
+                Left: {timeLeft.days}d : {timeLeft.hours}h : {timeLeft.minutes}m : {timeLeft.seconds}s
             </span>
         </div>
     );
