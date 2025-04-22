@@ -57,7 +57,7 @@ export default function RootLayout({
                 Your browser does not support the video tag.
               </video>
 
-              <main className="z-[1] flex justify-center items-center w-full h-full overflow-y-scroll">
+              <main className="z-[1] flex justify-center items-center w-full h-full overflow-y-auto">
                 {children}
               </main>
 

@@ -26,6 +26,7 @@ import {
 import {Modal} from "@/components/modal";
 import {JoinChampionship} from "@/components/join-championship";
 import {AddSponsor} from "@/components/add-sponsor";
+import {CountdownTimer} from "@/components/back-tracking";
 
 interface IChampionship {
     data: ChampionshipType;
@@ -53,7 +54,7 @@ export function Championship({data, onRefresh}: IChampionship) {
 
     const allMatchesHaveWinner =
         data.bracket?.matches.every((match) => match.winnerLeaderAddress) || false;
-    console.log('data.bracket?.matches ', data.bracket?.matches)
+
     const noMatchesLeft = data.bracket?.matches.length !== data.winnersAmount &&
         data.bracket?.matches.every(match => match.winnerLeaderAddress);
     const isAdmin = data.admin.address === address;
@@ -80,13 +81,29 @@ export function Championship({data, onRefresh}: IChampionship) {
             <span className="text-red-500">&nbsp;(You)</span>
         ) : null;
 
+    const renderStatusText = (status: number): string => {
+        switch (status) {
+            case 0:
+                return "- wait for Admin contact you, and start tournament";
+                break;
+            case 1:
+                return "- play your match and wait next round";
+                break;
+            case 2:
+                return "";
+                break;
+            default:
+                return "";
+        }
+    };
+
     return (
         <div className="pb-6 min-w-[50vw]">
             <div className="flex flex-col gap-4">
                 <div
                     className="p-4 z-0 flex flex-col relative justify-between gap-4 bg-content1 overflow-auto rounded-large shadow-small w-full">
                     <h1 className="text-lg font-semibold text-center">
-                        Status: {renderStatus(data.status)}
+                        Status: {renderStatus(data.status)}&nbsp;{renderStatusText(data.status)}
                     </h1>
                     {data.status === 2 ? (
                         <h2 className="text-lg font-semibold text-center">
@@ -165,7 +182,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                 </div>
 
                 {data.bracket && data.status === 1 && (
-                    <div className="mt-6 flex gap-6 flex-col">
+                    <div className="mt-6 flex gap-6 flex-col p-4 z-0 relative justify-between bg-content1 overflow-auto rounded-large shadow-smal">
                         <h2 className="text-lg font-semibold">Tournament Bracket</h2>
                         {data.bracket.matches.length === data.winnersAmount && (
                             <h3 className="text-lg font-semibold">Final Round!</h3>
@@ -319,7 +336,10 @@ export function Championship({data, onRefresh}: IChampionship) {
                         <TableColumn>Value</TableColumn>
                     </TableHeader>
                     <TableBody>
-
+                        <TableRow>
+                            <TableCell>Date Start</TableCell>
+                            <TableCell><CountdownTimer date={data.dayStart} /></TableCell>
+                        </TableRow>
                         <TableRow>
                             <TableCell>Discord</TableCell>
                             <TableCell>
@@ -345,10 +365,6 @@ export function Championship({data, onRefresh}: IChampionship) {
                         <TableRow>
                             <TableCell>Description</TableCell>
                             <TableCell>{data.description}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Date Start</TableCell>
-                            <TableCell>{data.dayStart}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Game</TableCell>

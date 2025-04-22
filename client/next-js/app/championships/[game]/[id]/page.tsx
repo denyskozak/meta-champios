@@ -31,6 +31,13 @@ export default function ChampionshipPage({
     },
   );
 
+  // Auto update champ each 5s
+    useEffect(() => {
+        const intervalId = setInterval(() => refetch(), 5000);
+        return () => clearInterval(intervalId);
+    }, []);
+
+    // Parse champ data
   useEffect(() => {
     if (
       data?.data?.content?.dataType === "moveObject" &&
@@ -45,18 +52,20 @@ export default function ChampionshipPage({
 
   return (
     <div className="flex flex-col h-full pt-4">
-      <Button
-          className="mb-4"
-        color="secondary"
-        radius="sm"
-        size="sm"
-        variant="solid"
-        onPress={() => {
-          router.push(`/championships/${championship?.gameName}`);
-        }}
-      >
-        Back
-      </Button>
+      <div>
+          <Button
+              className="mb-4 h-8"
+              color="secondary"
+              radius="lg"
+              size="sm"
+              variant="solid"
+              onPress={() => {
+                  router.push(`/championships/${championship?.gameName}`);
+              }}
+          >
+              Back
+          </Button>
+      </div>
       {championship && (
         <ChampionshipContent data={championship} onRefresh={refetch} />
       )}
