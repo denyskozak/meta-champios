@@ -9,7 +9,7 @@ export const CountdownTimer = ({ date }: ICountdownTimer) => {
 
     const calculateTimeLeft = () => {
         const now = new Date();
-        const difference = targetDate - now;
+        const difference: number = Number(targetDate) - Number(now);
 
         if (difference <= 0) {
             return {
