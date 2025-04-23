@@ -350,8 +350,8 @@ export function Championship({data, onRefresh}: IChampionship) {
                             <TableCell>Reward Per Winner</TableCell>
                             <TableCell className="flex gap-2">
                                 {convertMistToSui(data.rewardPool?.value / data.winnersAmount)}{" "}
-                                <CoinIcon/>&nbsp;
-                                (winners Amount)&nbsp;{data.winnersAmount}
+                                <CoinIcon/>
+                                winners amount&nbsp;-&nbsp;{data.winnersAmount}
                             </TableCell>
                         </TableRow>
                         <TableRow>
@@ -384,7 +384,6 @@ export function Championship({data, onRefresh}: IChampionship) {
                                 />
                             </TableCell>
                         </TableRow>
-                        <Divider />
                         <TableRow>
                             <TableCell>Discord</TableCell>
                             <TableCell>
@@ -416,8 +415,8 @@ export function Championship({data, onRefresh}: IChampionship) {
                             <TableCell>{data.gameName}</TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell>Team Size</TableCell>
-                            <TableCell>{data.teamSize}</TableCell>
+                            <TableCell>Match type</TableCell>
+                            <TableCell>{data.teamSize}x{data.teamSize}</TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Ticket Price</TableCell>
@@ -431,7 +430,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                                 {data.sponsors.length
                                     ? data.sponsors.map(sponsor => <span
                                     key={`${sponsor.title}${sponsor.amount}`}>{sponsor.title} ({sponsor.amount / MIST_PER_SUI} coins)</span>)
-                                    : 'Empty'
+                                    : <span>Empty</span>
                                 }
                             </TableCell>
                         </TableRow>
