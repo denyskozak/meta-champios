@@ -134,7 +134,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                     {data.status === 0 && (
                         <Button
                             className=" shadow-lg overflow-hidden group "
-                            disabled={Boolean(isInTeam)}
+                            disabled={Boolean(isInTeam) || Boolean(isFull)}
                             radius="lg"
                             size="lg"
                             onPress={() => {
@@ -151,7 +151,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                                 setJoinModalVisible(true);
                             }}
                         >
-                            {!isInTeam && (
+                            {!isInTeam && !isFull && (
                                 <span
                                     className="absolute inset-0 bg-gradient-to-r from-pink-500 via-red-500 to-yellow-500 animate-pulse opacity-100 group-hover:opacity-100 blur-md"/>
                             )}
