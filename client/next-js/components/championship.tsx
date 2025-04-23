@@ -1,6 +1,6 @@
 "use client";
 import React, {useMemo, useState} from "react";
-import {Button} from "@heroui/react";
+import {Button, Divider} from "@heroui/react";
 import {
     Progress,
     Table,
@@ -57,7 +57,11 @@ export function Championship({data, onRefresh}: IChampionship) {
 
     const noMatchesLeft = data.bracket?.matches.length !== data.winnersAmount &&
         data.bracket?.matches.every(match => match.winnerLeaderAddress);
+
     const isAdmin = data.admin.address === address;
+
+    const isFull = data.teams.length === data.participantsLimit;
+
     const teamWinners = useMemo(() => {
         const winnerAddresses = new Set();
 
@@ -84,13 +88,13 @@ export function Championship({data, onRefresh}: IChampionship) {
     const renderStatusText = (status: number): string => {
         switch (status) {
             case 0:
-                return "- wait for Admin contact you, and start tournament";
+                return "wait to Start Date for tournament starts, admin contact you before";
                 break;
             case 1:
-                return "- play your match and wait next round";
+                return "play your match and wait next round";
                 break;
             case 2:
-                return "";
+                return "tournament end, you can check results";
                 break;
             default:
                 return "";
@@ -103,7 +107,9 @@ export function Championship({data, onRefresh}: IChampionship) {
                 <div
                     className="p-4 z-0 flex flex-col relative justify-between gap-4 bg-content1 overflow-auto rounded-large shadow-small w-full">
                     <h1 className="text-lg font-semibold text-center">
-                        Status: {renderStatus(data.status)}&nbsp;{renderStatusText(data.status)}
+                        Status: {renderStatus(data.status)}
+                        <br />
+                        {renderStatusText(data.status)}
                     </h1>
                     {data.status === 2 ? (
                         <h2 className="text-lg font-semibold text-center">
@@ -153,7 +159,7 @@ export function Championship({data, onRefresh}: IChampionship) {
               {" "}
                                 {isInTeam
                                     ? "You are Registered"
-                                    : `Register Your Team ${renderJoinButtonText(data)}`}
+                                    : isFull ? 'Tournament is full' : `Register Your Team ${renderJoinButtonText(data)}`}
             </span>
                         </Button>
                     )}
@@ -337,9 +343,48 @@ export function Championship({data, onRefresh}: IChampionship) {
                     </TableHeader>
                     <TableBody>
                         <TableRow>
-                            <TableCell>Date Start</TableCell>
+                            <TableCell>Start Date</TableCell>
                             <TableCell><CountdownTimer date={data.dayStart} /></TableCell>
                         </TableRow>
+                        <TableRow>
+                            <TableCell>Reward Per Winner</TableCell>
+                            <TableCell className="flex gap-2">
+                                {convertMistToSui(data.rewardPool?.value / data.winnersAmount)}{" "}
+                                <CoinIcon/>&nbsp;
+                                (winners Amount)&nbsp;{data.winnersAmount}
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Reward Pool</TableCell>
+                            <TableCell className="flex gap-2">
+                                {convertMistToSui(data.rewardPool?.value)}{" "}
+                                <CoinIcon/>
+                            </TableCell>
+                        </TableRow>
+                        <TableRow>
+                            <TableCell>Teams</TableCell>
+                            <TableCell>
+                                <Progress
+                                    classNames={{
+                                        base: "max-w-md",
+                                        track: "drop-shadow-md border border-default",
+                                        indicator: "bg-gradient-to-r from-pink-500 to-yellow-500",
+                                        label: "tracking-wider font-medium text-default-600",
+                                        value: "text-foreground/60",
+                                    }}
+                                    label={`Capacity ${data.participantsLimit}`}
+                                    radius="sm"
+                                    showValueLabel={true}
+                                    size="sm"
+                                    value={
+                                        data.teams.length === 0
+                                            ? 0
+                                            : (data.teams.length / data.participantsLimit) * 100
+                                    }
+                                />
+                            </TableCell>
+                        </TableRow>
+                        <Divider />
                         <TableRow>
                             <TableCell>Discord</TableCell>
                             <TableCell>
@@ -381,51 +426,13 @@ export function Championship({data, onRefresh}: IChampionship) {
                             </TableCell>
                         </TableRow>
                         <TableRow>
-                            <TableCell>Winners Amount</TableCell>
-                            <TableCell>{data.winnersAmount}</TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Reward Per Winner</TableCell>
-                            <TableCell className="flex gap-2">
-                                {convertMistToSui(data.rewardPool?.value / data.winnersAmount)}{" "}
-                                <CoinIcon/>
-                            </TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Reward Pool</TableCell>
-                            <TableCell className="flex gap-2">
-                                {convertMistToSui(data.rewardPool?.value)}{" "}
-                                <CoinIcon/>
-                            </TableCell>
-                        </TableRow>
-                        <TableRow>
-                            <TableCell>Teams</TableCell>
-                            <TableCell>
-                                <Progress
-                                    classNames={{
-                                        base: "max-w-md",
-                                        track: "drop-shadow-md border border-default",
-                                        indicator: "bg-gradient-to-r from-pink-500 to-yellow-500",
-                                        label: "tracking-wider font-medium text-default-600",
-                                        value: "text-foreground/60",
-                                    }}
-                                    label={`Capacity ${data.participantsLimit}`}
-                                    radius="sm"
-                                    showValueLabel={true}
-                                    size="sm"
-                                    value={
-                                        data.teams.length === 0
-                                            ? 0
-                                            : (data.teams.length / data.participantsLimit) * 100
-                                    }
-                                />
-                            </TableCell>
-                        </TableRow>
-                        <TableRow>
                             <TableCell>Sponsors</TableCell>
                             <TableCell>
-                                {data.sponsors.map(sponsor => <span
-                                    key={`${sponsor.title}${sponsor.amount}`}>{sponsor.title} ({sponsor.amount / MIST_PER_SUI} coins)</span>)}
+                                {data.sponsors.length
+                                    ? data.sponsors.map(sponsor => <span
+                                    key={`${sponsor.title}${sponsor.amount}`}>{sponsor.title} ({sponsor.amount / MIST_PER_SUI} coins)</span>)
+                                    : 'Empty'
+                                }
                             </TableCell>
                         </TableRow>
                     </TableBody>
