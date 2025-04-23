@@ -163,28 +163,6 @@ export function Championship({data, onRefresh}: IChampionship) {
             </span>
                         </Button>
                     )}
-
-                    {data.status === 0 || data.status === 1
-                        ? (<Button
-                            color="primary"
-                            variant="solid"
-                            onPress={() => {
-                                if (!address) {
-                                    addToast({
-                                        title: "Connect required",
-                                        description: "Use Connect button (top right)",
-                                        color: "warning",
-                                        variant: "solid",
-                                    });
-
-                                    return;
-                                }
-                                setSponsorVisible(true);
-                            }}
-                        >
-                            Become Sponsor
-                        </Button>)
-                        : null}
                 </div>
 
                 {data.bracket && data.status === 1 && (
@@ -432,6 +410,27 @@ export function Championship({data, onRefresh}: IChampionship) {
                                     key={`${sponsor.title}${sponsor.amount}`}>{sponsor.title} ({sponsor.amount / MIST_PER_SUI} coins)</span>)
                                     : <span>Empty</span>
                                 }
+                                {data.status === 0 || data.status === 1
+                                    ? (<Button
+                                        color="primary"
+                                        variant="solid"
+                                        onPress={() => {
+                                            if (!address) {
+                                                addToast({
+                                                    title: "Connect required",
+                                                    description: "Use Connect button (top right)",
+                                                    color: "warning",
+                                                    variant: "solid",
+                                                });
+
+                                                return;
+                                            }
+                                            setSponsorVisible(true);
+                                        }}
+                                    >
+                                        Become Sponsor
+                                    </Button>)
+                                    : null}
                             </TableCell>
                         </TableRow>
                     </TableBody>
