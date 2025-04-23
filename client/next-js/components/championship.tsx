@@ -410,8 +410,10 @@ export function Championship({data, onRefresh}: IChampionship) {
                                     key={`${sponsor.title}${sponsor.amount}`}>{sponsor.title} ({sponsor.amount / MIST_PER_SUI} coins)</span>)
                                     : <span>Empty</span>
                                 }
+                                <br />
                                 {data.status === 0 || data.status === 1
                                     ? (<Button
+                                        size="sm"
                                         color="primary"
                                         variant="solid"
                                         onPress={() => {
