@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from 'react';
 
 interface ICountdownTimer {
-    date: string;
+    date: number;
 }
 
 export const CountdownTimer = ({ date }: ICountdownTimer) => {
-    const targetDate = new Date(`${date}T00:00:00`); // 15 октября 2024
+    const targetDate = new Date(date); // 15 октября 2024
 
     const calculateTimeLeft = () => {
         const now = new Date();
-        const difference: number = Number(targetDate) - Number(now);
+        const difference: number = targetDate.getTime() - now.getTime();
 
         if (difference <= 0) {
             return {
@@ -40,7 +40,7 @@ export const CountdownTimer = ({ date }: ICountdownTimer) => {
 
     return (
         <div style={{ fontFamily: 'sans-serif', textAlign: 'center' }}>
-            <span>{targetDate.toLocaleDateString()}</span>
+            <span>{targetDate.toLocaleString()}</span>
             <br />
             <span>
                 Left: {timeLeft.days}d : {timeLeft.hours}h : {timeLeft.minutes}m : {timeLeft.seconds}s

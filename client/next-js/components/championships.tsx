@@ -193,7 +193,7 @@ export default function Championships({game}: ChampionshipsProps) {
                                         return (
                                             <TableRow key={championship.id}>
                                                 <TableCell> {championship.title}</TableCell>
-                                                <TableCell> {championship.dayStart}</TableCell>
+                                                <TableCell> {new Date(championship.dateStart).toLocaleString()}</TableCell>
                                                 <TableCell> {renderJoinButtonText(championship)}</TableCell>
                                                 <TableCell> {renderStatus(championship.status)}</TableCell>
                                                 <TableCell>

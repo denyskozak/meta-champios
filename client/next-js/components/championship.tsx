@@ -322,7 +322,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                     <TableBody>
                         <TableRow>
                             <TableCell>Start Date</TableCell>
-                            <TableCell><CountdownTimer date={data.dayStart} /></TableCell>
+                            <TableCell><CountdownTimer date={data.dateStart} /></TableCell>
                         </TableRow>
                         <TableRow>
                             <TableCell>Reward Per Winner</TableCell>

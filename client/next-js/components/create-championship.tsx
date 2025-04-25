@@ -33,6 +33,7 @@ export const CreateChampionship = ({
             discordAdminName,
             winnerAmount,
             day_start,
+            time_start,
           } = Object.fromEntries(new FormData(e.currentTarget)) as {
             title: string;
             description: string;
@@ -44,7 +45,10 @@ export const CreateChampionship = ({
             discordAdminName: string;
             winnerAmount: string;
             day_start: string;
+            time_start: string;
           };
+
+          const dateStart = new Date(`${day_start}T${time_start}`).getTime();
 
           if (Number(teamsLimit) % Number(winnerAmount) !== 0) {
             addToast({
@@ -64,7 +68,7 @@ export const CreateChampionship = ({
             discordLink,
             discordAdminName,
             winnerAmount,
-            day_start,
+              dateStart,
           );
           onSuccess?.();
           window.dispatchEvent(new Event("update-championships"));
@@ -192,14 +196,23 @@ export const CreateChampionship = ({
 
       <Input
         isRequired
-        defaultValue="10/10/2025"
-        errorMessage="Please enter a valid Dat start"
+        errorMessage="Please enter a valid Day start"
         label="Day start"
         labelPlacement="outside"
         name="day_start"
         placeholder="e.g. 24"
         type="date"
       />
+
+      <Input
+          isRequired
+          errorMessage="Please enter a valid Time start"
+          label="Time start"
+          labelPlacement="outside"
+          name="time_start"
+        type="time"
+      />
+
 
       <div className="flex gap-2">
         <Button className="gap-0" color="primary" type="submit">

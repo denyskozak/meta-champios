@@ -76,7 +76,7 @@ module meta_wars::championship {
         bracket: Bracket,
         sponsors: vector<Sponsor>,
         status: u8,
-        day_start: String,
+        date_start: u64,
         // 0 = Open, 1 = Ongoing, 2 = Closed
     }
 
@@ -90,7 +90,7 @@ module meta_wars::championship {
         discord_chat_link: String,
         admin_discord_nickname: String,
         winners_amount: u64,
-        day_start: String,
+        date_start: u64,
         payment: coin::Coin<SUI>,
         ctx: &mut TxContext,
     ) {
@@ -127,7 +127,7 @@ module meta_wars::championship {
             sponsors: vector::empty<Sponsor>(),
             teams: vector::empty<Team>(),
             bracket,
-            day_start,
+            date_start,
             status: 0
         };
 

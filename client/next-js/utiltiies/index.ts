@@ -64,7 +64,7 @@ export interface MoveChampionshipGraphQL {
   description: string;
   game_name: string;
   ticket_price: string;
-  day_start: string;
+  date_start: string;
   reward_pool: {
     value: string;
   };
@@ -98,7 +98,7 @@ export const mapChampionshipGraphQL = (
     title: item.title,
     description: item.description,
     gameName: item.game_name,
-    dayStart: item.day_start,
+    dateStart: Number(item.date_start),
     ticketPrice: Number(item.ticket_price),
     rewardPool: {
       value: Number(item.reward_pool?.value),
@@ -135,7 +135,7 @@ export interface MoveChampionshipRPC {
   game_name: string;
   ticket_price: string;
   reward_pool: string;
-  day_start: string;
+  date_start: string;
   admin: {
     fields: {
       address: string;
@@ -178,7 +178,7 @@ export const mapChampionshipRPC = (item: MoveChampionshipRPC): Championship => {
     title: item.title,
     description: item.description,
     gameName: item.game_name,
-    dayStart: item.day_start,
+    dateStart: Number(item.date_start),
     ticketPrice: Number(item.ticket_price),
     rewardPool: {
       value: Number(item.reward_pool),
