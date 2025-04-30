@@ -2,7 +2,7 @@ import {Championship as ChampionshipType, Championship, Sponsor, Team} from "@/t
 
 export const MIST_PER_SUI = 1000000000;
 
-export function convertMistToSui(suiAmount?: number) {
+export function convertMistToSui(suiAmount?: number): string {
   if (suiAmount === undefined) return "0";
 
   return (suiAmount / MIST_PER_SUI).toFixed(2);

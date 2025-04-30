@@ -101,6 +101,7 @@ export function Championship({data, onRefresh}: IChampionship) {
         }
     };
 
+    const rewardPerWinner = convertMistToSui(data.rewardPool?.value / data.winnersAmount);
     return (
         <div className="pb-6 min-w-[50vw] max-w-[70vw]">
             <div className="flex flex-col gap-4">
@@ -327,7 +328,7 @@ export function Championship({data, onRefresh}: IChampionship) {
                         <TableRow>
                             <TableCell>Reward Per Winner</TableCell>
                             <TableCell className="flex gap-2">
-                                {convertMistToSui(data.rewardPool?.value / data.winnersAmount)}{" "}
+                                {rewardPerWinner}{` ≈ ${Number.parseFloat(rewardPerWinner) * 3.5}$`}
                                 <CoinIcon/>
                                 winners amount&nbsp;-&nbsp;{data.winnersAmount}
                             </TableCell>
