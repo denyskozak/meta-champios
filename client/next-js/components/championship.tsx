@@ -102,7 +102,7 @@ export function Championship({data, onRefresh}: IChampionship) {
     };
 
     return (
-        <div className="pb-6 min-w-[50vw]">
+        <div className="pb-6 min-w-[50vw] max-w-[70vw]">
             <div className="flex flex-col gap-4">
                 <div
                     className="p-4 z-0 flex flex-col relative justify-between gap-4 bg-content1 overflow-auto rounded-large shadow-small w-full">
