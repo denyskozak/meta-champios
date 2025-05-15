@@ -1,8 +1,3 @@
-<div align="center">
-
-## ✨ [**Link to Project**](https://meta-wars.vercel.app/) ✨
-
-</div>
 
 # MetaChampions – Play Beyond
 
